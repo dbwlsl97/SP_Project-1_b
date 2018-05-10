@@ -18,7 +18,7 @@ public class SymbolTable {
 	 * 매칭되는 주소값의 변경은 modifySymbol()을 통해서 이루어져야 한다.
 	 */
 	public void putSymbol(String symbol, int location) {
-		
+
 	}
 	
 	/**

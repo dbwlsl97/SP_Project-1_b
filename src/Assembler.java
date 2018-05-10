@@ -103,24 +103,25 @@ public class Assembler {
 		String[] l_token = new String[4]; //각 input line을 탭을 기준으로 자른것을 넣은 곳	
 		SymbolTable symTab = new SymbolTable();
 		TokenTable toTab = new TokenTable(symTab,instTable);
-		TokenList.add(toTab);
+//		TokenList.add(toTab);
 		for(int i=0;i<i_line.length;i++) {
 			i_line[i] = lineList.get(i);
 			if(i_line[i].contains(".")) {
-				continue;
-//				i_line[i] = ".\t\t\t";
+//				continue;
+				i_line[i] = ".\t\t\t";
 			}
 			for(int j=0;j<l_token.length;j++) {
 				l_token = i_line[i].split("\t",4);
 
 			if((l_token[j].equals("START"))||(l_token[j].equals("CSECT"))) {
-//				System.out.println(l_token[j]);
+				toTab.locctr =0;
 				TokenList.add(toTab);
 				symtabList.add(symTab);
 			}
 			}
 //			System.out.println(i_line[i]);
 			toTab.putToken(i_line[i]);
+//			System.out.println(toTab.getToken(i).operator);
 		}
 
 		
@@ -150,9 +151,6 @@ public class Assembler {
 			lineList.add(rline);
 
 		}
-//		for(int i=0;i<lineList.size();i++) {
-//		System.out.println(lineList.get(i));
-//		}
 	}
 	
 }

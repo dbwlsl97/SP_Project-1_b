@@ -20,7 +20,8 @@ public class TokenTable {
 	/* Token을 다룰 때 필요한 테이블들을 링크시킨다. */
 	SymbolTable symTab;
 	InstTable instTab;
-	
+	static int locctr;
+	int i_format;
 	
 	/** 각 line을 의미별로 분할하고 분석하는 공간. */
 	ArrayList<Token> tokenList;
@@ -34,8 +35,7 @@ public class TokenTable {
 		this.symTab = symTab;
 		this.instTab = instTab;
 		tokenList = new ArrayList<Token>();
-
-	}
+		}
 	
 	/**
 	 * 일반 문자열을 받아서 Token단위로 분리시켜 tokenList에 추가한다.
@@ -43,6 +43,63 @@ public class TokenTable {
 	 */
 	public void putToken(String line) {
 		tokenList.add(new Token(line));
+		Token t = new Token(line);
+		String f_opt = t.operator;
+		t.location = locctr;
+//		locctr = t.location;
+		if(!t.label.isEmpty()) {
+			symTab.putSymbol(t.label, locctr);
+			System.out.println(t.label+"\t"+locctr);
+		}
+		if(t.operator.contains("+")) {
+			f_opt = t.operator.substring(1);
+			if(instTab.instMap.containsKey(f_opt)) {
+				i_format = instTab.instMap.get(f_opt).format;
+			}
+			locctr +=4;
+		}
+		else if((instTab.instMap.containsKey(t.operator))) {
+			i_format = instTab.instMap.get(t.operator).format;
+			if(i_format==1) {
+				locctr +=1;
+			}
+			else if(i_format==2) {
+				locctr +=2;
+			}
+			else if(i_format==3) {
+				locctr +=3;
+			}
+		}
+		else if(t.operator.equals("END")) {
+			
+			locctr =0;
+		}
+//		else if(t.operator.equals("EQU")) {
+//			if(t.operand[0].contains("-")) {
+//
+//			}
+//			else {
+//				
+//			}
+//		}
+		else if(t.operator.equals("RESW")) {
+			locctr += (3*Integer.parseInt(t.operand[0]));
+		}
+		else if(t.operator.equals("RESB")) {
+			locctr += (1*Integer.parseInt(t.operand[0]));
+		}
+		else if(t.operator.equals("BYTE")) {
+			locctr += 1;
+		}
+		else if((t.operator.equals("WORD"))||(t.operator.equals("LTORG"))) {
+			locctr += 3;
+		}
+
+//		System.out.println(t.location + "\t" +t.operator);
+//		else if(t.operator.contains("EXT")) {
+//			
+//		}
+
 	}
 	
 	/**
@@ -80,13 +137,13 @@ public class TokenTable {
  */
 class Token{
 	//의미 분석 단계에서 사용되는 변수들
-	int location;
+	static int location;
 	String label;
 	String operator;
 	String[] operand;
 	String comment;
 	char nixbpe;
-
+//	InstTable instTab;
 	// object code 생성 단계에서 사용되는 변수들 
 	String objectCode;
 	int byteSize;
@@ -106,6 +163,7 @@ class Token{
 	 * @param line 문장단위로 저장된 프로그램 코드.
 	 */
 	public void parsing(String line) {
+
 		String[] line_token = line.split("\t",4);
 		operand = new String[3];
 		label = line_token[0];
@@ -129,9 +187,6 @@ class Token{
 //			count++;
 //		}
 		comment = line_token[3];
-//		public Token getToken(int index) {
-//			return tokenList.get(index);
-//		}
 		
 	}
 	

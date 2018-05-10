@@ -40,7 +40,6 @@ public class InstTable {
 			//이제 잘라서 instMap에 넣어주기
 			instMap.put(inst.instruction, inst);					
 		}
-//		System.out.println(instMap.keySet());
 		rInst.close();
 	}
 	
@@ -78,8 +77,11 @@ class Instruction {
 		if(inst_token[1].equals("3/4")) {
 			format = 3;
 		}
+		else {
+			format = Integer.parseInt(inst_token[1]);
+		}
 		opcode = Integer.parseInt(inst_token[2],16);
-		numberOfOperand = Integer.parseInt(inst_token[3]);		
+		numberOfOperand = Integer.parseInt(inst_token[3]);
 	}
 
 	
