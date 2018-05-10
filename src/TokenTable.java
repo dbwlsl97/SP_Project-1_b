@@ -31,7 +31,10 @@ public class TokenTable {
 	 * @param instTab : instruction 명세가 정의된 instTable
 	 */
 	public TokenTable(SymbolTable symTab, InstTable instTab) {
-		//...
+		this.symTab = symTab;
+		this.instTab = instTab;
+		tokenList = new ArrayList<Token>();
+
 	}
 	
 	/**
@@ -87,7 +90,7 @@ class Token{
 	// object code 생성 단계에서 사용되는 변수들 
 	String objectCode;
 	int byteSize;
-	
+	static int count; //line 번호 세기 = index
 	/**
 	 * 클래스를 초기화 하면서 바로 line의 의미 분석을 수행한다. 
 	 * @param line 문장단위로 저장된 프로그램 코드
@@ -95,6 +98,7 @@ class Token{
 	public Token(String line) {
 		//initialize 추가
 		parsing(line);
+		
 	}
 	
 	/**
@@ -102,6 +106,32 @@ class Token{
 	 * @param line 문장단위로 저장된 프로그램 코드.
 	 */
 	public void parsing(String line) {
+		String[] line_token = line.split("\t",4);
+		operand = new String[3];
+		label = line_token[0];
+		operator = line_token[1];
+		if(line_token[2].contains(",")) {
+			operand = line_token[2].split(",",3);
+		}
+		else {
+//			operand = new String[1];
+			operand[0] = line_token[2];
+		}
+		if(operand[0].contains("-")) {
+			operand = operand[0].split("-",2);
+		}
+//		if(operand.length==2) {
+//			System.out.println("no."+count+"  "+operand[0]+", "+operand[1]);
+//			count++;
+//		}
+//		if(operand.length==3) {
+//			System.out.println("no."+count+"  "+operand[0]+", "+operand[1]+", "+operand[2]);
+//			count++;
+//		}
+		comment = line_token[3];
+//		public Token getToken(int index) {
+//			return tokenList.get(index);
+//		}
 		
 	}
 	

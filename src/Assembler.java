@@ -1,3 +1,6 @@
+import java.io.BufferedReader;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -96,7 +99,33 @@ public class Assembler {
 	private void pass1() {
 		// TODO Auto-generated method stub
 		
+		String[] i_line = new String[lineList.size()]; //lineList를 한 줄씩 넣은 곳
+		String[] l_token = new String[4]; //각 input line을 탭을 기준으로 자른것을 넣은 곳	
+		SymbolTable symTab = new SymbolTable();
+		TokenTable toTab = new TokenTable(symTab,instTable);
+		TokenList.add(toTab);
+		for(int i=0;i<i_line.length;i++) {
+			i_line[i] = lineList.get(i);
+			if(i_line[i].contains(".")) {
+				continue;
+//				i_line[i] = ".\t\t\t";
+			}
+			for(int j=0;j<l_token.length;j++) {
+				l_token = i_line[i].split("\t",4);
+
+			if((l_token[j].equals("START"))||(l_token[j].equals("CSECT"))) {
+//				System.out.println(l_token[j]);
+				TokenList.add(toTab);
+				symtabList.add(symTab);
+			}
+			}
+//			System.out.println(i_line[i]);
+			toTab.putToken(i_line[i]);
+		}
+
+		
 	}
+
 	
 	/**
 	 * pass2 과정을 수행한다.<br>
@@ -110,9 +139,20 @@ public class Assembler {
 	/**
 	 * inputFile을 읽어들여서 lineList에 저장한다.<br>
 	 * @param inputFile : input 파일 이름.
+	 * @throws IOException 
 	 */
-	private void loadInputFile(String inputFile) {
+	private void loadInputFile(String inputFile) throws IOException {
 		// TODO Auto-generated method stub
-		
+		BufferedReader rInput = new BufferedReader(new FileReader("./input.txt"));
+		while(true) {
+			String rline = rInput.readLine();
+			if(rline==null) break;
+			lineList.add(rline);
+
+		}
+//		for(int i=0;i<lineList.size();i++) {
+//		System.out.println(lineList.get(i));
+//		}
 	}
+	
 }

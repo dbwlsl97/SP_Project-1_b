@@ -32,19 +32,15 @@ public class InstTable {
 	 * @throws IOException 
 	 */
 	public void openFile(String fileName) throws IOException { //inst.dat를 한 줄 씩 불러오기
-		BufferedReader rInst = new BufferedReader(new FileReader("C:/inst.data"));
+		BufferedReader rInst = new BufferedReader(new FileReader("./inst.data"));
 		while(true) {
 			String rline = rInst.readLine();
 			if(rline==null) break;
-			String[] inst_line = rline.split("\t");
 			Instruction inst = new Instruction(rline);
 			//이제 잘라서 instMap에 넣어주기
-			this.instMap.put(inst_line[0], inst);
-			
-			System.out.println(instMap.get(inst_line[0]).instruction +"\t"+ instMap.get(inst_line[0]).opcode +"\t"
-			+instMap.get(inst_line[0]).numberOfOperand+"\t"+ instMap.get(inst_line[0]).format);
-			
+			instMap.put(inst.instruction, inst);					
 		}
+//		System.out.println(instMap.keySet());
 		rInst.close();
 	}
 	
@@ -78,12 +74,12 @@ class Instruction {
 	public void parsing(String line) {
 		// TODO Auto-generated method stub
 		String[] inst_token = line.split("\t");
-		this.instruction = inst_token[0];
+		instruction = inst_token[0];
 		if(inst_token[1].equals("3/4")) {
-			this.format = 3;
+			format = 3;
 		}
-		this.opcode = Integer.parseInt(inst_token[2],16);
-		this.numberOfOperand = Integer.parseInt(inst_token[3]);		
+		opcode = Integer.parseInt(inst_token[2],16);
+		numberOfOperand = Integer.parseInt(inst_token[3]);		
 	}
 
 	
