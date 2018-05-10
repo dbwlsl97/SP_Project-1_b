@@ -1,9 +1,11 @@
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 
 
@@ -64,7 +66,7 @@ public class Assembler {
 		assembler.loadInputFile("input.txt");
 		
 		assembler.pass1();
-		assembler.printSymbolTable("symtab_00000000");
+		assembler.printSymbolTable("symtab_20160273");
 		
 		assembler.pass2();
 		assembler.printObjectCode("output_00000000");
@@ -83,10 +85,27 @@ public class Assembler {
 	/**
 	 * 작성된 SymbolTable들을 출력형태에 맞게 출력한다.<br>
 	 * @param fileName : 저장되는 파일 이름
+	 * @throws FileNotFoundException 
 	 */
-	private void printSymbolTable(String fileName) {
+	private void printSymbolTable(String fileName) throws FileNotFoundException {
 		// TODO Auto-generated method stub
 		
+//		FileOutputStream f_sym = new FileOutputStream(fileName+".txt");
+		SymbolTable s = new SymbolTable();
+		s.symbolList = new ArrayList<String>();
+		s.locationList = new ArrayList<Integer>();
+		Iterator it = s.symbolList.iterator();
+		int loc = 0;
+		String sym= "";
+		while (it.hasNext()) {
+		    sym = (String)it.next();
+		     System.out.print(sym+"\t");
+		}
+		Iterator it2 = s.locationList.iterator();
+		while (it2.hasNext()) {
+		    loc = (int)it2.next();
+		     System.out.print(loc+"\n");
+		}
 	}
 
 	/** 
@@ -107,8 +126,8 @@ public class Assembler {
 		for(int i=0;i<i_line.length;i++) {
 			i_line[i] = lineList.get(i);
 			if(i_line[i].contains(".")) {
-//				continue;
-				i_line[i] = ".\t\t\t";
+				continue;
+//				i_line[i] = ".\t\t\t";
 			}
 			for(int j=0;j<l_token.length;j++) {
 				l_token = i_line[i].split("\t",4);

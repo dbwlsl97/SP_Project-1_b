@@ -42,14 +42,16 @@ public class TokenTable {
 	 * @param line : 분리되지 않은 일반 문자열
 	 */
 	public void putToken(String line) {
+		int loc1=0;
+		int loc2=0;
 		tokenList.add(new Token(line));
 		Token t = new Token(line);
-		String f_opt = t.operator;
+		String f_opt = t.operator; // 4형식을 위해 만든 string 변수
 		t.location = locctr;
 //		locctr = t.location;
 		if(!t.label.isEmpty()) {
 			symTab.putSymbol(t.label, locctr);
-			System.out.println(t.label+"\t"+locctr);
+//			System.out.println(t.label+"\t"+locctr);
 		}
 		if(t.operator.contains("+")) {
 			f_opt = t.operator.substring(1);
@@ -75,13 +77,22 @@ public class TokenTable {
 			locctr =0;
 		}
 //		else if(t.operator.equals("EQU")) {
-//			if(t.operand[0].contains("-")) {
-//
+//		if(t.operand[0].contains("-")) {
+//				t.operand = t.operand[0].split("-",2);
+//				loc1 = symTab.search(t.operand[0]);
+//				loc2 = symTab.search(t.operand[1]);
+////				System.out.println(t.operand[0]+"\t"+loc1);
+////					if(t.operand[0].equals(symTab.symbolList.get(i))) {
+////						loc1 = symTab.locationList.get(i);
+////						System.out.println(i);
+////					}
+////					if(t.operand[1].equals(symTab.symbolList.get(i))) {
+////						loc2 = symTab.locationList.get(i);
+////					}
+//				}
+//				locctr = loc1 - loc2;
+////				System.out.println(t.label+"\t"+locctr);
 //			}
-//			else {
-//				
-//			}
-//		}
 		else if(t.operator.equals("RESW")) {
 			locctr += (3*Integer.parseInt(t.operand[0]));
 		}
@@ -94,11 +105,6 @@ public class TokenTable {
 		else if((t.operator.equals("WORD"))||(t.operator.equals("LTORG"))) {
 			locctr += 3;
 		}
-
-//		System.out.println(t.location + "\t" +t.operator);
-//		else if(t.operator.contains("EXT")) {
-//			
-//		}
 
 	}
 	
@@ -175,9 +181,9 @@ class Token{
 //			operand = new String[1];
 			operand[0] = line_token[2];
 		}
-		if(operand[0].contains("-")) {
-			operand = operand[0].split("-",2);
-		}
+//		if(operand[0].contains("-")) {
+//			operand = operand[0].split("-",2);
+//		}
 //		if(operand.length==2) {
 //			System.out.println("no."+count+"  "+operand[0]+", "+operand[1]);
 //			count++;

@@ -1,4 +1,5 @@
 import java.util.ArrayList;
+import java.util.Iterator;
 
 /**
  * symbol과 관련된 데이터와 연산을 소유한다.
@@ -8,7 +9,7 @@ public class SymbolTable {
 	ArrayList<String> symbolList;
 	ArrayList<Integer> locationList;
 	// 기타 literal, external 선언 및 처리방법을 구현한다.
-	
+
 	/**
 	 * 새로운 Symbol을 table에 추가한다.
 	 * @param symbol : 새로 추가되는 symbol의 label
@@ -18,6 +19,22 @@ public class SymbolTable {
 	 * 매칭되는 주소값의 변경은 modifySymbol()을 통해서 이루어져야 한다.
 	 */
 	public void putSymbol(String symbol, int location) {
+		symbolList = new ArrayList<String>();
+		locationList = new ArrayList<Integer>();
+		symbolList.add(symbol);
+		locationList.add(location);
+//		Iterator it = symbolList.iterator();
+//		int loc = 0;
+//		String sym= "";
+//		while (it.hasNext()) {
+//		    sym = (String)it.next();
+//		     System.out.print(sym+"\t");
+//		}
+//		Iterator it2 = locationList.iterator();
+//		while (it2.hasNext()) {
+//		    loc = (int)it2.next();
+//		     System.out.print(loc+"\n");
+//		}
 
 	}
 	
@@ -37,10 +54,16 @@ public class SymbolTable {
 	 */
 	public int search(String symbol) {
 		int address = 0;
-		//...
+		if(symbolList.contains(symbol)) {
+			address = locationList.get(address);
+			System.out.println(symbol);
+		}
+		else {
+			return -1;
+		}
 		return address;
 	}
 	
-	
+
 	
 }
