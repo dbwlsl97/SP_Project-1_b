@@ -49,7 +49,6 @@ public class SymbolTable {
 				if(symbol.equals(symbolList.get(i))) {
 					address = locationList.get(i);					
 				}
-//			System.out.println(symbol);
 			}
 		}
 		else {

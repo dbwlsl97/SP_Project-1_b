@@ -42,7 +42,7 @@ public class Assembler {
 	 * 필요한 경우 String 대신 별도의 클래스를 선언하여 ArrayList를 교체해도 무방함.
 	 */
 	ArrayList<String> codeList;
-	
+	static int section;
 	/**
 	 * 클래스 초기화. instruction Table을 초기화와 동시에 세팅한다.
 	 * 
@@ -92,19 +92,6 @@ public class Assembler {
 		
 //		FileOutputStream f_sym = new FileOutputStream(fileName+".txt");
 //		SymbolTable s = new SymbolTable();
-
-//		Iterator it = s.symbolList.iterator();
-//		int loc = 0;
-//		String sym= "";
-//		while (it.hasNext()) {
-//		    sym = (String)it.next();
-//		     System.out.print(sym+"\t");
-//		}
-//		Iterator it2 = s.locationList.iterator();
-//		while (it2.hasNext()) {
-//		    loc = (int)it2.next();
-//		     System.out.print(loc+"\n");
-//		}
 	}
 
 	/** 
@@ -119,10 +106,9 @@ public class Assembler {
 		
 		String[] i_line = new String[lineList.size()]; //lineList를 한 줄씩 넣은 곳
 		String[] l_token = new String[4]; //각 input line을 탭을 기준으로 자른것을 넣은 곳	
-		SymbolTable symTab = new SymbolTable();
-		TokenTable toTab = new TokenTable(symTab,instTable);
-//		TokenList.add(toTab);
-		for(int i=0;i<i_line.length;i++) {
+//		SymbolTable symTab = new SymbolTable();
+//		TokenTable toTab = new TokenTable(symTab,instTable);
+		for(int i=0;i<lineList.size();i++) {
 			i_line[i] = lineList.get(i);
 			if(i_line[i].contains(".")) {
 				continue;
@@ -130,16 +116,22 @@ public class Assembler {
 			}
 			for(int j=0;j<l_token.length;j++) {
 				l_token = i_line[i].split("\t",4);
-
-			if((l_token[j].equals("START"))||(l_token[j].equals("CSECT"))) {
-				toTab.locctr =0;
-				TokenList.add(toTab);
-				symtabList.add(symTab);
+			if(l_token[j].equals("START")) {
+				symtabList.add(new SymbolTable());
+				TokenList.add(new TokenTable(symtabList.get(section),instTable));
+			}
+			if(l_token[j].equals("CSECT")) {
+				section++;
+				symtabList.add(new SymbolTable());
+				TokenList.add(new TokenTable(symtabList.get(section),instTable));
 			}
 			}
+			TokenList.get(section).putToken(i_line[i]);
+//			System.out.println("no."+i+"\t"+TokenList.size());
+//			System.out.println(symtabList.size());
 //			System.out.println(i_line[i]);
-			toTab.putToken(i_line[i]);
-//			System.out.println(toTab.getToken(i).operator);
+//			toTab.putToken(i_line[i]);
+//			System.out.println(toTab.getToken(i).location);
 		}
 
 		
