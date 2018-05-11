@@ -46,6 +46,7 @@ public class TokenTable {
 		int loc1=0;
 		int loc2=0;
 		tokenList.add(new Token(line));
+
 		Token t = new Token(line);
 		String f_opt = t.operator; // 4형식을 위해 만든 string 변수
 		t.location = locctr;
@@ -60,7 +61,7 @@ public class TokenTable {
 			}
 			locctr +=4;
 		}
-		else if((instTab.instMap.containsKey(t.operator))) {
+		else if(instTab.instMap.containsKey(t.operator)) {
 			i_format = instTab.instMap.get(t.operator).format;
 			if(i_format==1) {
 				locctr +=1;
@@ -118,7 +119,9 @@ public class TokenTable {
 	 * @param index
 	 */
 	public void makeObjectCode(int index){
-		//...
+		String str = "";
+		str = tokenList.get(index).operator;
+		System.out.println(str);
 	}
 	
 	/** 
@@ -143,17 +146,18 @@ class Token{
 	String operator;
 	String[] operand;
 	String comment;
-	char nixbpe;
+	char nixbpe; 
 //	InstTable instTab;
 	// object code 생성 단계에서 사용되는 변수들 
 	String objectCode;
 	int byteSize;
-	static int count; //line 번호 세기 = index
+//	static int count; //line 번호 세기 = index
 	/**
 	 * 클래스를 초기화 하면서 바로 line의 의미 분석을 수행한다. 
 	 * @param line 문장단위로 저장된 프로그램 코드
 	 */
 	public Token(String line) {
+		nixbpe =0;
 		//initialize 추가
 		parsing(line);
 		
@@ -201,7 +205,12 @@ class Token{
 	 * @param value : 집어넣고자 하는 값. 1또는 0으로 선언한다.
 	 */
 	public void setFlag(int flag, int value) {
-		//...
+		if(value==1) {
+			nixbpe |= flag;
+		}
+		else if(value==0) {
+			nixbpe &= flag;
+		}
 	}
 	
 	/**

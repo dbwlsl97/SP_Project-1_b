@@ -144,7 +144,18 @@ public class Assembler {
 	 */
 	private void pass2() {
 		// TODO Auto-generated method stub
+		String[] i_line = new String[lineList.size()]; //lineList를 한 줄씩 넣은 곳
+//		String line = "";
+		String[] l_token = new String[4];
+		SymbolTable sym = new SymbolTable();
+		TokenTable to = new TokenTable(sym, instTable);
 		
+//		line = makeObjectCODE;		
+//		line = lineList.get(i);
+		for(int i=0;i<lineList.size();i++) {
+//			codeList.add(line);
+			TokenList.get(section).makeObjectCode(i);
+		}
 	}
 	
 	/**
