@@ -76,23 +76,17 @@ public class TokenTable {
 			
 			locctr =0;
 		}
-//		else if(t.operator.equals("EQU")) {
-//		if(t.operand[0].contains("-")) {
-//				t.operand = t.operand[0].split("-",2);
-//				loc1 = symTab.search(t.operand[0]);
-//				loc2 = symTab.search(t.operand[1]);
-////				System.out.println(t.operand[0]+"\t"+loc1);
-////					if(t.operand[0].equals(symTab.symbolList.get(i))) {
-////						loc1 = symTab.locationList.get(i);
-////						System.out.println(i);
-////					}
-////					if(t.operand[1].equals(symTab.symbolList.get(i))) {
-////						loc2 = symTab.locationList.get(i);
-////					}
-//				}
-//				locctr = loc1 - loc2;
-////				System.out.println(t.label+"\t"+locctr);
-//			}
+		else if(t.operator.equals("EQU")) {
+		if(t.operand[0].contains("-")) {
+				t.operand = t.operand[0].split("-",2);
+				loc1 = symTab.search(t.operand[0]);
+				loc2 = symTab.search(t.operand[1]);
+				System.out.println(t.operand[0]+"\t"+loc1);
+				System.out.println(t.operand[1]+"\t"+loc2);
+				}
+				locctr = loc1 - loc2;
+				System.out.println(t.label+"\t"+locctr);
+			}
 		else if(t.operator.equals("RESW")) {
 			locctr += (3*Integer.parseInt(t.operand[0]));
 		}

@@ -91,21 +91,20 @@ public class Assembler {
 		// TODO Auto-generated method stub
 		
 //		FileOutputStream f_sym = new FileOutputStream(fileName+".txt");
-		SymbolTable s = new SymbolTable();
-		s.symbolList = new ArrayList<String>();
-		s.locationList = new ArrayList<Integer>();
-		Iterator it = s.symbolList.iterator();
-		int loc = 0;
-		String sym= "";
-		while (it.hasNext()) {
-		    sym = (String)it.next();
-		     System.out.print(sym+"\t");
-		}
-		Iterator it2 = s.locationList.iterator();
-		while (it2.hasNext()) {
-		    loc = (int)it2.next();
-		     System.out.print(loc+"\n");
-		}
+//		SymbolTable s = new SymbolTable();
+
+//		Iterator it = s.symbolList.iterator();
+//		int loc = 0;
+//		String sym= "";
+//		while (it.hasNext()) {
+//		    sym = (String)it.next();
+//		     System.out.print(sym+"\t");
+//		}
+//		Iterator it2 = s.locationList.iterator();
+//		while (it2.hasNext()) {
+//		    loc = (int)it2.next();
+//		     System.out.print(loc+"\n");
+//		}
 	}
 
 	/** 

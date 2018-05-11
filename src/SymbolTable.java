@@ -18,24 +18,14 @@ public class SymbolTable {
 	 * 주의 : 만약 중복된 symbol이 putSymbol을 통해서 입력된다면 이는 프로그램 코드에 문제가 있음을 나타낸다. 
 	 * 매칭되는 주소값의 변경은 modifySymbol()을 통해서 이루어져야 한다.
 	 */
-	public void putSymbol(String symbol, int location) {
+	public SymbolTable() {
 		symbolList = new ArrayList<String>();
 		locationList = new ArrayList<Integer>();
+	}
+	public void putSymbol(String symbol, int location) {		
 		symbolList.add(symbol);
 		locationList.add(location);
-//		Iterator it = symbolList.iterator();
-//		int loc = 0;
-//		String sym= "";
-//		while (it.hasNext()) {
-//		    sym = (String)it.next();
-//		     System.out.print(sym+"\t");
-//		}
-//		Iterator it2 = locationList.iterator();
-//		while (it2.hasNext()) {
-//		    loc = (int)it2.next();
-//		     System.out.print(loc+"\n");
-//		}
-
+//		System.out.println(symbol+"\t"+location);
 	}
 	
 	/**
@@ -55,8 +45,12 @@ public class SymbolTable {
 	public int search(String symbol) {
 		int address = 0;
 		if(symbolList.contains(symbol)) {
-			address = locationList.get(address);
-			System.out.println(symbol);
+			for(int i=0;i<symbolList.size();i++) {
+				if(symbol.equals(symbolList.get(i))) {
+					address = locationList.get(i);					
+				}
+//			System.out.println(symbol);
+			}
 		}
 		else {
 			return -1;
