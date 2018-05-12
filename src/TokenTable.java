@@ -58,7 +58,19 @@ public class TokenTable {
 			f_opt = t.operator.substring(1);
 			if(instTab.instMap.containsKey(f_opt)) {
 				i_format = instTab.instMap.get(f_opt).format;
-			}
+				t.setFlag(nFlag, 1);
+			    t.setFlag(iFlag, 1);
+//			    System.out.println(Integer.toBinaryString(t.nixbpe));
+//			    if(t.operand!=null) {
+//			    	if(t.operand[1].equals("X")) {     <-- 왜 안되는지 모르겠음
+			    	t.setFlag(xFlag, 1);
+//			    	System.out.println(t.operand[1]);
+//			    	}
+//			    }
+
+//		    	System.out.println(Integer.toBinaryString(t.nixbpe));
+			    	
+			}                              
 			locctr +=4;
 		}
 		else if(instTab.instMap.containsKey(t.operator)) {
@@ -70,6 +82,13 @@ public class TokenTable {
 				locctr +=2;
 			}
 			else if(i_format==3) {
+				if(t.operand[0].contains("#")) {
+					t.setFlag(iFlag, 1);
+				}
+				else if(t.operand[0].contains("@")) {
+					t.setFlag(nFlag, 1);
+					t.setFlag(pFlag, 1);
+				}
 				locctr +=3;
 			}
 		}
@@ -119,9 +138,9 @@ public class TokenTable {
 	 * @param index
 	 */
 	public void makeObjectCode(int index){
-		String str = "";
-		str = tokenList.get(index).operator;
-		System.out.println(str);
+//		String str = "";
+//		str = tokenList.get(index).operator;
+//		System.out.println(str);
 	}
 	
 	/** 
@@ -211,6 +230,7 @@ class Token{
 		else if(value==0) {
 			nixbpe &= flag;
 		}
+		
 	}
 	
 	/**

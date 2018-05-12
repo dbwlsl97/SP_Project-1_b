@@ -43,6 +43,8 @@ public class Assembler {
 	 */
 	ArrayList<String> codeList;
 	static int section;
+	int end_sec ;
+	int[] sec;
 	/**
 	 * 클래스 초기화. instruction Table을 초기화와 동시에 세팅한다.
 	 * 
@@ -55,6 +57,7 @@ public class Assembler {
 		symtabList = new ArrayList<SymbolTable>();
 		TokenList = new ArrayList<TokenTable>();
 		codeList = new ArrayList<String>();
+		
 	}
 
 	/** 
@@ -106,7 +109,7 @@ public class Assembler {
 		
 		String[] i_line = new String[lineList.size()]; //lineList를 한 줄씩 넣은 곳
 		String[] l_token = new String[4]; //각 input line을 탭을 기준으로 자른것을 넣은 곳	
-
+		sec = new int[lineList.size()];
 		for(int i=0;i<lineList.size();i++) {
 			i_line[i] = lineList.get(i);
 			if(i_line[i].contains(".")) {
@@ -124,16 +127,20 @@ public class Assembler {
 				symtabList.add(new SymbolTable());
 				TokenList.add(new TokenTable(symtabList.get(section),instTable));
 			}
+			sec[i] = section;
 			}
 			
 			TokenList.get(section).putToken(i_line[i]);
+//			TokenList.get(section).getToken(i);
 //			System.out.println("no."+i+"\t"+i_line[i]);
 //			System.out.println("no."+i+"\t"+TokenList.size());
 //			System.out.println(symtabList.size());
 //			System.out.println(i_line[i]);
 //			toTab.putToken(i_line[i]);
 //			System.out.println(toTab.getToken(i).location);
+//			System.out.println(sec[i]);
 		}
+		
 //		System.out.println(TokenList.size());
 		
 	}
@@ -145,66 +152,16 @@ public class Assembler {
 	 */
 	private void pass2() {
 		// TODO Auto-generated method stub
+		SymbolTable sym = new SymbolTable();
+		TokenTable to = new TokenTable(sym, instTable);
 		String[] i_line = new String[lineList.size()]; //lineList를 한 줄씩 넣은 곳
-//		String line = "";
-		int a=0;
-		int b=0;
-		String[] l_token = new String[4];
-		for(int i=0;i<=section;i++) {
-//			for(int j=0;j<lineList.size();j++) {
-				if(i==0) {
-					for(int j=0;j<lineList.size();j++) {
-					TokenList.get(i).makeObjectCode(j);
-	//				continue;
-					}
-				}
-				else if(i==1) {
-					for(int j=0;j<lineList.size();j++) {
-						TokenList.get(i).makeObjectCode(j);
-//						continue;
-						}
-				}
-				else if(i==2) {
-					for(int j=0;j<lineList.size();j++) {
-						TokenList.get(i).makeObjectCode(j);
-//						continue;
-					}
-				}
-//			}
-
-		}
-//		for(int i=0;i<=section;i++) {
-//			for(int j=0;j<lineList.size();j++) {
-//			switch(i) {
-//
-//			case 0:
-//				TokenList.get(i).makeObjectCode(j);
-//				break;
-//			case 1:
-//				TokenList.get(i).makeObjectCode(j);
-//				break;
-//			case 2:
-//				TokenList.get(i).makeObjectCode(j);
-//				break;
-//			}
-//			}
-//		}
-//		SymbolTable sym = new SymbolTable();
-//		TokenTable to = new TokenTable(sym, instTable);
-//		for(int i=1;i<=TokenList.size();i++) {
-//			for(int j=0;j<lineList.size();j++) {
-//			if(TokenList.size()==1) {
-//			TokenList.get(i).makeObjectCode(j);
-//			}
-//			}
-//		}
-
-//		line = makeObjectCODE;		
-//		line = lineList.get(i);
 //		for(int i=0;i<lineList.size();i++) {
-////			codeList.add(line);
-//			TokenList.get(section).makeObjectCode(i);
+//			if(lineList.get(i).contains(".")) {
+//				continue;
+//			}
+//			instTable.instMap.containsKey(to.oper)
 //		}
+
 	}
 //	TokenList.get(i).tokenList.get(j)
 	/**
