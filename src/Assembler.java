@@ -152,18 +152,12 @@ public class Assembler {
 	 */
 	private void pass2() {
 		// TODO Auto-generated method stub
-		SymbolTable sym = new SymbolTable();
-		TokenTable to = new TokenTable(sym, instTable);
-		String[] i_line = new String[lineList.size()]; //lineList를 한 줄씩 넣은 곳
-//		for(int i=0;i<lineList.size();i++) {
-//			if(lineList.get(i).contains(".")) {
-//				continue;
-//			}
-//			instTable.instMap.containsKey(to.oper)
-//		}
-
+		for(int i=0;i<TokenList.size();i++) {
+			for(int j=0;j<TokenList.get(i).tokenList.size();j++) {
+				TokenList.get(i).makeObjectCode(j);
+			}
+		}
 	}
-//	TokenList.get(i).tokenList.get(j)
 	/**
 	 * inputFile을 읽어들여서 lineList에 저장한다.<br>
 	 * @param inputFile : input 파일 이름.

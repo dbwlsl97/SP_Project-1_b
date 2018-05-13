@@ -42,11 +42,9 @@ public class TokenTable {
 	 * @param line : 분리되지 않은 일반 문자열
 	 */
 	public void putToken(String line) {
-//		System.out.println(line);
 		int loc1=0;
 		int loc2=0;
 		tokenList.add(new Token(line));
-
 		Token t = new Token(line);
 		String f_opt = t.operator; // 4형식을 위해 만든 string 변수
 		t.location = locctr;
@@ -58,17 +56,6 @@ public class TokenTable {
 			f_opt = t.operator.substring(1);
 			if(instTab.instMap.containsKey(f_opt)) {
 				i_format = instTab.instMap.get(f_opt).format;
-				t.setFlag(nFlag, 1);
-			    t.setFlag(iFlag, 1);
-//			    System.out.println(Integer.toBinaryString(t.nixbpe));
-//			    if(t.operand!=null) {
-//			    	if(t.operand[1].equals("X")) {     <-- 왜 안되는지 모르겠음
-			    	t.setFlag(xFlag, 1);
-//			    	System.out.println(t.operand[1]);
-//			    	}
-//			    }
-
-//		    	System.out.println(Integer.toBinaryString(t.nixbpe));
 			    	
 			}                              
 			locctr +=4;
@@ -138,9 +125,57 @@ public class TokenTable {
 	 * @param index
 	 */
 	public void makeObjectCode(int index){
-//		String str = "";
-//		str = tokenList.get(index).operator;
-//		System.out.println(str);
+		int format_2 = 0;
+		if(tokenList.get(index).operator.contains("+")) {
+			tokenList.get(index).setFlag(nFlag, 1);
+			tokenList.get(index).setFlag(iFlag, 1);
+			tokenList.get(index).setFlag(eFlag, 1);
+			if(tokenList.get(index).operand[1]!=null) {
+				if(tokenList.get(index).operand[1].equals("X")) {
+					tokenList.get(index).setFlag(xFlag, 1);
+				}
+			}
+//			System.out.println(Integer.toBinaryString(tokenList.get(index).nixbpe));
+		}
+		else if(instTab.instMap.containsKey(tokenList.get(index).operator)) {
+			Instruction op = instTab.instMap.get(tokenList.get(index).operator);
+			i_format = instTab.instMap.get(tokenList.get(index).operator).format;
+			if(i_format==2) {
+				for(int i=0;i<2;i++) {
+					if(tokenList.get(index).operand[i]!=null) {
+						if(tokenList.get(index).operand[i].equals("A")) {
+							format_2 +=0;
+						}
+						else if(tokenList.get(index).operand[i].equals("X")) {
+							format_2 +=1;
+						}
+						else if(tokenList.get(index).operand[i].equals("L")) {
+							format_2 +=2;
+						}
+						else if(tokenList.get(index).operand[i].equals("B")) {
+							format_2 +=3;
+						}
+						else if(tokenList.get(index).operand[i].equals("S")) {
+							format_2 +=4;
+						}
+						else if(tokenList.get(index).operand[i].equals("T")) {
+							format_2 +=5;
+						}
+						else if(tokenList.get(index).operand[i].equals("F")) {
+							format_2 +=6;
+						}
+						else if(tokenList.get(index).operand[i].equals("PC")) {
+							format_2 +=8;
+						}
+						else if(tokenList.get(index).operand[i].equals("SW")) {
+							format_2 +=9;
+						}
+//						if(i==0)
+//							format_2 = format_2 << 4;
+					}
+					tokenList.get(index).objectCode = Integer.toString(format_2);				}
+			}
+		}
 	}
 	
 	/** 
@@ -177,6 +212,7 @@ class Token{
 	 */
 	public Token(String line) {
 		nixbpe =0;
+		operand = new String[3];
 		//initialize 추가
 		parsing(line);
 		
@@ -189,7 +225,6 @@ class Token{
 	public void parsing(String line) {
 
 		String[] line_token = line.split("\t",4);
-		operand = new String[3];
 		label = line_token[0];
 		operator = line_token[1];
 		if(line_token[2].contains(",")) {
