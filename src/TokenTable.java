@@ -22,7 +22,10 @@ public class TokenTable {
 	InstTable instTab;
 	static int locctr;
 	int i_format;
-	
+	String f_opt;
+	int objcode; // int 형 nixbpe
+	int T_addr;
+	int PC_addr; 
 	/** 각 line을 의미별로 분할하고 분석하는 공간. */
 	ArrayList<Token> tokenList;
 	
@@ -46,8 +49,9 @@ public class TokenTable {
 		int loc2=0;
 		tokenList.add(new Token(line));
 		Token t = new Token(line);
-		String f_opt = t.operator; // 4형식을 위해 만든 string 변수
+		f_opt = t.operator; // 4형식을 위해 만든 string 변수
 		t.location = locctr;
+		System.out.println(t.location);
 //		locctr = t.location;
 		if(!t.label.isEmpty()) {
 			symTab.putSymbol(t.label, locctr);
@@ -56,7 +60,6 @@ public class TokenTable {
 			f_opt = t.operator.substring(1);
 			if(instTab.instMap.containsKey(f_opt)) {
 				i_format = instTab.instMap.get(f_opt).format;
-			    	
 			}                              
 			locctr +=4;
 		}
@@ -69,13 +72,6 @@ public class TokenTable {
 				locctr +=2;
 			}
 			else if(i_format==3) {
-				if(t.operand[0].contains("#")) {
-					t.setFlag(iFlag, 1);
-				}
-				else if(t.operand[0].contains("@")) {
-					t.setFlag(nFlag, 1);
-					t.setFlag(pFlag, 1);
-				}
 				locctr +=3;
 			}
 		}
@@ -125,8 +121,15 @@ public class TokenTable {
 	 * @param index
 	 */
 	public void makeObjectCode(int index){
+		
+		Instruction op = instTab.instMap.get(tokenList.get(index).operator);
 		int format_2 = 0;
+		objcode =0;
+		T_addr =0;
+		PC_addr =0;
 		if(tokenList.get(index).operator.contains("+")) {
+			f_opt = tokenList.get(index).operator.substring(1);
+			op = instTab.instMap.get(f_opt);
 			tokenList.get(index).setFlag(nFlag, 1);
 			tokenList.get(index).setFlag(iFlag, 1);
 			tokenList.get(index).setFlag(eFlag, 1);
@@ -135,45 +138,71 @@ public class TokenTable {
 					tokenList.get(index).setFlag(xFlag, 1);
 				}
 			}
-//			System.out.println(Integer.toBinaryString(tokenList.get(index).nixbpe));
+			objcode += op.opcode << 24;
+			objcode += tokenList.get(index).nixbpe <<20 ;
+			tokenList.get(index).objectCode = String.format("%X", objcode);
+//			System.out.println(op.instruction + "\t"+ tokenList.get(index).objectCode);
 		}
 		else if(instTab.instMap.containsKey(tokenList.get(index).operator)) {
-			Instruction op = instTab.instMap.get(tokenList.get(index).operator);
 			i_format = instTab.instMap.get(tokenList.get(index).operator).format;
 			if(i_format==2) {
 				for(int i=0;i<2;i++) {
 					if(tokenList.get(index).operand[i]!=null) {
 						if(tokenList.get(index).operand[i].equals("A")) {
-							format_2 +=0;
+							format_2 |=0;
 						}
 						else if(tokenList.get(index).operand[i].equals("X")) {
-							format_2 +=1;
+							format_2 |=1;
 						}
 						else if(tokenList.get(index).operand[i].equals("L")) {
-							format_2 +=2;
+							format_2 |=2;
 						}
 						else if(tokenList.get(index).operand[i].equals("B")) {
-							format_2 +=3;
+							format_2 |=3;
 						}
 						else if(tokenList.get(index).operand[i].equals("S")) {
-							format_2 +=4;
+							format_2 |=4;
 						}
 						else if(tokenList.get(index).operand[i].equals("T")) {
-							format_2 +=5;
+							format_2 |=5;
 						}
 						else if(tokenList.get(index).operand[i].equals("F")) {
-							format_2 +=6;
+							format_2 |=6;
 						}
 						else if(tokenList.get(index).operand[i].equals("PC")) {
-							format_2 +=8;
+							format_2 |=8;
 						}
 						else if(tokenList.get(index).operand[i].equals("SW")) {
-							format_2 +=9;
+							format_2 |=9;
 						}
-//						if(i==0)
-//							format_2 = format_2 << 4;
+						if(i==0)
+							format_2 = format_2 << 4;
 					}
-					tokenList.get(index).objectCode = Integer.toString(format_2);				}
+					}
+				tokenList.get(index).objectCode = String.format("%02X%02X", op.opcode, format_2);
+//				System.out.println(op.instruction + "\t"+ tokenList.get(index).objectCode);
+			}
+			else if(i_format==3) {
+				objcode = op.opcode<<16;
+				if(tokenList.get(index).operand[0].contains("#")) {
+					T_addr = Integer.parseInt(tokenList.get(index).operand[0].substring(1));
+					tokenList.get(index).setFlag(iFlag, 1);
+					objcode +=tokenList.get(index).nixbpe<<12;
+					objcode +=T_addr;
+					tokenList.get(index).objectCode = String.format("%06X", objcode);
+//					System.out.println(op.instruction + "\t"+ tokenList.get(index).objectCode);
+					
+				}
+				else if(tokenList.get(index).operand[0].contains("@")) {
+					tokenList.get(index).setFlag(nFlag, 1);
+					tokenList.get(index).setFlag(pFlag, 1);
+					objcode +=tokenList.get(index).nixbpe<<12;
+					T_addr = symTab.search(tokenList.get(index).operand[0].substring(1));
+					PC_addr = tokenList.get(index).location;
+		//			System.out.println(PC_addr);
+//					objcode += (T_addr - PC_addr);
+//					System.out.println(op.instruction + "\t"+ tokenList.get(index).objectCode);
+				}
 			}
 		}
 	}
@@ -195,7 +224,7 @@ public class TokenTable {
  */
 class Token{
 	//의미 분석 단계에서 사용되는 변수들
-	static int location;
+	int location;
 	String label;
 	String operator;
 	String[] operand;
@@ -234,17 +263,7 @@ class Token{
 //			operand = new String[1];
 			operand[0] = line_token[2];
 		}
-//		if(operand[0].contains("-")) {
-//			operand = operand[0].split("-",2);
-//		}
-//		if(operand.length==2) {
-//			System.out.println("no."+count+"  "+operand[0]+", "+operand[1]);
-//			count++;
-//		}
-//		if(operand.length==3) {
-//			System.out.println("no."+count+"  "+operand[0]+", "+operand[1]+", "+operand[2]);
-//			count++;
-//		}
+
 		comment = line_token[3];
 		
 	}
