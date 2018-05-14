@@ -91,7 +91,6 @@ public class TokenTable {
 				loc2 = symTab.search(t.operand[1]);
 				locctr = loc1 - loc2;
 				symTab.putSymbol(t.label, locctr);
-				
 //				System.out.println(t.label+"\t"+locctr);
 				t.location = locctr;
 		}
@@ -109,10 +108,14 @@ public class TokenTable {
 		else if((t.operator.equals("WORD"))||(t.operator.equals("LTORG"))) {
 			locctr += 3;
 		}
-		if(t.operand[0].contains("=")) {
-			litTab.putSymbol(t.operand[0], t.location);
-//			System.out.println(litTab.locationList+"\t"+litTab.symbolList);
-//			System.out.println(litTab.symbolList.get(0)+"\t"+litTab.locationList.get(0));
+		if(t.operator.equals("LTORG")) {
+			for(int i=0;i<tokenList.size();i++) {
+				if(tokenList.get(i).operand[0].contains("=")) {
+					litTab.putSymbol(tokenList.get(i).operand[0], locctr);
+				}
+			}
+			System.out.println(litTab.locationList+"\t"+litTab.symbolList);
+//			System.out.println(litTab.symbolList+"\t"+litTab.locationList);
 		}
 		if(t.operator.equals("START")||(t.operator.equals("CSECT"))) {
 			locctr = 0;
@@ -156,7 +159,7 @@ public class TokenTable {
 			objcode += op.opcode << 24;
 			objcode += tokenList.get(index).nixbpe <<20 ;
 			tokenList.get(index).objectCode = String.format("%X", objcode);
-			System.out.println(op.instruction + "\t"+ tokenList.get(index).objectCode);
+	//		System.out.println(op.instruction + "\t"+ tokenList.get(index).objectCode);
 		}
 		else if(instTab.instMap.containsKey(tokenList.get(index).operator)) {
 			i_format = instTab.instMap.get(tokenList.get(index).operator).format;
@@ -195,7 +198,7 @@ public class TokenTable {
 					}
 					}
 				tokenList.get(index).objectCode = String.format("%02X%02X", op.opcode, format_2);
-				System.out.println(op.instruction + "\t"+ tokenList.get(index).objectCode);
+//				System.out.println(op.instruction + "\t"+ tokenList.get(index).objectCode);
 			}
 			else if(i_format==3) {
 				objcode = op.opcode<<16;
@@ -205,7 +208,7 @@ public class TokenTable {
 					objcode +=tokenList.get(index).nixbpe<<12;
 					objcode +=T_addr;
 					tokenList.get(index).objectCode = String.format("%06X", objcode);
-					System.out.println(op.instruction + "\t"+ tokenList.get(index).objectCode);
+//					System.out.println(op.instruction + "\t"+ tokenList.get(index).objectCode);
 					
 				}
 				else if(tokenList.get(index).operand[0].contains("@")) {
@@ -216,14 +219,26 @@ public class TokenTable {
 					PC_addr = tokenList.get(index+1).location;
 					objcode += (T_addr - PC_addr);
 					tokenList.get(index).objectCode = String.format("%06X", objcode);
-					System.out.println(op.instruction + "\t"+ tokenList.get(index).objectCode);
+//					System.out.println(op.instruction + "\t"+ tokenList.get(index).objectCode);
+				}
+				else if(tokenList.get(index).operand[0].contains("=")) {
+					tokenList.get(index).setFlag(nFlag, 1);
+					tokenList.get(index).setFlag(iFlag, 1);
+					tokenList.get(index).setFlag(pFlag, 1);
+					objcode += tokenList.get(index).nixbpe<<12;
+					T_addr = tokenList.get(index).location;
+					
+					for(int i=index;i<tokenList.size();i++) {
+						lit_addr = litTab.search(tokenList.get(index).operand[0]);
+//						System.out.println(op.instruction + "\t"+ lit_addr );
+					}
 				}
 				else if(tokenList.get(index).operand[0].isEmpty()) {
 					tokenList.get(index).setFlag(nFlag, 1);
 					tokenList.get(index).setFlag(iFlag, 1);
 					objcode += tokenList.get(index).nixbpe<<12;
 					tokenList.get(index).objectCode = String.format("%06X", objcode);
-					System.out.println(op.instruction + "\t"+ tokenList.get(index).objectCode);
+//					System.out.println(op.instruction + "\t"+ tokenList.get(index).objectCode);
 
 				}
 				else {
@@ -239,11 +254,9 @@ public class TokenTable {
 					else
 					objcode += (T_addr - PC_addr);
 					tokenList.get(index).objectCode = String.format("%06X", objcode);
-					System.out.println(op.instruction + "\t"+ tokenList.get(index).objectCode);
+	//				System.out.println(op.instruction + "\t"+ tokenList.get(index).objectCode);
 				}
-//				else if(tokenList.get(index).operand[0].contains("=")) {
-////					for(int i=0;i)
-//				}
+
 			}
 		}
 	}
