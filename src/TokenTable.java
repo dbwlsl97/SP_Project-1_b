@@ -28,7 +28,8 @@ public class TokenTable {
 	int objcode; // int 형 nixbpe
 	int T_addr;
 	int PC_addr;
-	int lit_addr;
+	char[] lit;
+	int[] endaddr;
 	/** 각 line을 의미별로 분할하고 분석하는 공간. */
 	ArrayList<Token> tokenList;
 	/**
@@ -53,14 +54,18 @@ public class TokenTable {
 		int loc2=0;
 		tokenList.add(new Token(line));
 		Token t = tokenList.get(tokenList.size()-1);
-		
 		f_opt = t.operator; // 4형식을 위해 만든 string 변수
 		
 		t.location = locctr;
 //		locctr = t.location;
+		if(t.operator.equals("START")||(t.operator.equals("CSECT"))) {
+			addr =locctr;
+			locctr = 0;
+		}
 		if(!t.label.isEmpty()) {
 			symTab.putSymbol(t.label, locctr);
 		}
+
 		if(t.operator.contains("+")) {
 			f_opt = t.operator.substring(1);
 			if(instTab.instMap.containsKey(f_opt)) {
@@ -81,16 +86,17 @@ public class TokenTable {
 			}
 		}
 //		else if(t.operator.equals("END")) {
-//			locctr =0;
-//			t.location = locctr;
+//			
 //		}
 		else if(t.operator.equals("EQU")) {
 		if(t.operand[0].contains("-")) {
+				String a = t.operand[0];
 				t.operand = t.operand[0].split("-",2);
 				loc1 = symTab.search(t.operand[0]);
 				loc2 = symTab.search(t.operand[1]);
 				locctr = loc1 - loc2;
-				symTab.putSymbol(t.label, locctr);
+				symTab.modifySymbol(t.label, locctr);
+//				symTab.putSymbol(t.label, locctr);
 //				System.out.println(t.label+"\t"+locctr);
 				t.location = locctr;
 		}
@@ -108,27 +114,18 @@ public class TokenTable {
 		else if((t.operator.equals("WORD"))||(t.operator.equals("LTORG"))) {
 			locctr += 3;
 		}
-//		if(t.operator.equals("LTORG")) {
-//			for(int i=0;i<tokenList.size();i++) {
-//				if(tokenList.get(i).operand[0].contains("=")) {
-//
-//					litTab.putSymbol(tokenList.get(i).operand[0], locctr);
-//				}
-//			}
-//			System.out.println(litTab.locationList+"\t"+litTab.symbolList);
-//		}
+
 		if(t.operand[0].contains("=")) {
 			if(litTab.search(t.operand[0])==-1) {		
 				litTab.putSymbol(t.operand[0], locctr);
-//						System.out.println(litTab.symbolList+"\t"+t.operand[0] + "\t" + litTab.search(t.operand[0]));
+				if(t.operand[0].contains("X"))
+					locctr+=1;
 					}
 //			System.out.println(litTab.locationList+"\t"+litTab.symbolList);
 				}
 	
 	
-		if(t.operator.equals("START")||(t.operator.equals("CSECT"))) {
-			locctr = 0;
-		}
+
 //		System.out.println(t.location);
 	}
 	
@@ -166,7 +163,24 @@ public class TokenTable {
 			objcode += op.opcode << 24;
 			objcode += tokenList.get(index).nixbpe <<20 ;
 			tokenList.get(index).objectCode = String.format("%X", objcode);
-			System.out.println(op.instruction + "\t"+ tokenList.get(index).objectCode);
+			tokenList.get(index).byteSize +=4;
+//			System.out.println(op.instruction + "\t"+ tokenList.get(index).objectCode);
+		}
+		else if(tokenList.get(index).operator.equals("BYTE")) {
+			int a = 0;
+			String[] str = tokenList.get(index).operand[0].split("'");
+//			a = Integer.parseInt(str[1]);
+			tokenList.get(index).objectCode = String.format("%02X", Integer.parseInt(str[1], 16));
+			tokenList.get(index).byteSize +=1;
+		}
+		else if(tokenList.get(index).operator.equals("WORD")) {
+			int a =0, b=0;
+			a = symTab.search(tokenList.get(index).operand[0]);
+			b = symTab.search(tokenList.get(index).operand[0]);
+			if(a==-1||b==-1) {
+				tokenList.get(index).objectCode = String.format("%06X", 0);
+			}
+			tokenList.get(index).byteSize +=3;
 		}
 		else if(instTab.instMap.containsKey(tokenList.get(index).operator)) {
 			i_format = instTab.instMap.get(tokenList.get(index).operator).format;
@@ -176,7 +190,7 @@ public class TokenTable {
 						if(tokenList.get(index).operand[i].equals("A")) {
 							format_2 |=0;
 						}
-	             					else if(tokenList.get(index).operand[i].equals("X")) {
+	             		else if(tokenList.get(index).operand[i].equals("X")) {
 							format_2 |=1;
 						}
 						else if(tokenList.get(index).operand[i].equals("L")) {
@@ -205,9 +219,11 @@ public class TokenTable {
 					}
 					}
 				tokenList.get(index).objectCode = String.format("%02X%02X", op.opcode, format_2);
-				System.out.println(op.instruction + "\t"+ tokenList.get(index).objectCode);
+				tokenList.get(index).byteSize +=2;
+//				System.out.println(op.instruction + "\t"+ tokenList.get(index).objectCode);
 			}
 			else if(i_format==3) {
+				tokenList.get(index).byteSize +=3;
 				objcode = op.opcode<<16;
 				if(tokenList.get(index).operand[0].contains("#")) {
 					T_addr = Integer.parseInt(tokenList.get(index).operand[0].substring(1));
@@ -215,7 +231,7 @@ public class TokenTable {
 					objcode +=tokenList.get(index).nixbpe<<12;
 					objcode +=T_addr;
 					tokenList.get(index).objectCode = String.format("%06X", objcode);
-					System.out.println(op.instruction + "\t"+ tokenList.get(index).objectCode);
+//					System.out.println(op.instruction + "\t"+ tokenList.get(index).objectCode);
 					
 				}
 				else if(tokenList.get(index).operand[0].contains("@")) {
@@ -226,7 +242,7 @@ public class TokenTable {
 					PC_addr = tokenList.get(index+1).location;
 					objcode += (T_addr - PC_addr);
 					tokenList.get(index).objectCode = String.format("%06X", objcode);
-					System.out.println(op.instruction + "\t"+ tokenList.get(index).objectCode);
+//					System.out.println(op.instruction + "\t"+ tokenList.get(index).objectCode);
 				}
 				else if(tokenList.get(index).operand[0].contains("=")) {
 					tokenList.get(index).setFlag(nFlag, 1);
@@ -235,27 +251,36 @@ public class TokenTable {
 					objcode += tokenList.get(index).nixbpe<<12;
 					for(int i=index; i<tokenList.size(); i++) {
 						if(tokenList.get(i).operator.equals("LTORG")) {
-						litTab.modifySymbol(tokenList.get(index).operand[0], tokenList.get(i).location);
+						litTab.modifySymbol(tokenList.get(index).operand[0], tokenList.get(i).location);	
+						lit = litTab.lit[1].toCharArray();
+						for(int j=0;j<lit.length;j++) {
+							tokenList.get(i).objectCode += String.format("%02X", (int)lit[j]); // =C 일 때
+						}
+//						System.out.println(tokenList.get(i).operator + "\t"+ tokenList.get(i).objectCode);	
 						break;
 						}
-						else
-						litTab.modifySymbol(tokenList.get(index).operand[0], tokenList.get(i).location);
+						else {
+						litTab.modifySymbol(tokenList.get(index).operand[0], tokenList.get(i).location); // =X 일 때
+						if(i==tokenList.size()-1) {
+							tokenList.get(i).objectCode = String.format("%02X", Integer.parseInt(litTab.lit[1], 16));
+//							System.out.println(tokenList.get(i).operator + "\t"+ tokenList.get(i).objectCode);
+							break;
+						}
+						}
 					}					
 					T_addr = litTab.search(tokenList.get(index).operand[0]);
 					PC_addr = tokenList.get(index+1).location;
 					objcode += (T_addr - PC_addr);
 					tokenList.get(index).objectCode = String.format("%06X", objcode);
-					System.out.println(op.instruction + "\t"+ tokenList.get(index).objectCode);
-
-					
+//					System.out.println(op.instruction + "\t"+ tokenList.get(index).objectCode + "\t");	
+				//	break;
 				}
 				else if(tokenList.get(index).operand[0].isEmpty()) {
 					tokenList.get(index).setFlag(nFlag, 1);
 					tokenList.get(index).setFlag(iFlag, 1);
 					objcode += tokenList.get(index).nixbpe<<12;
 					tokenList.get(index).objectCode = String.format("%06X", objcode);
-					System.out.println(op.instruction + "\t"+ tokenList.get(index).objectCode);
-
+//					System.out.println(op.instruction + "\t"+ tokenList.get(index).objectCode);
 				}
 				else {
 					tokenList.get(index).setFlag(nFlag, 1);
@@ -264,17 +289,18 @@ public class TokenTable {
 					objcode += tokenList.get(index).nixbpe<<12;
 					T_addr = symTab.search(tokenList.get(index).operand[0]);
 					PC_addr = tokenList.get(index+1).location;
-					if(T_addr <= PC_addr) {
+					if(T_addr <= PC_addr) 
 						objcode += ((T_addr - PC_addr) & 0x00000FFF);
-					}
 					else
 					objcode += (T_addr - PC_addr);
 					tokenList.get(index).objectCode = String.format("%06X", objcode);
-					System.out.println(op.instruction + "\t"+ tokenList.get(index).objectCode);
+//					System.out.println(op.instruction + "\t"+ tokenList.get(index).objectCode);
 				}
 
 			}
+			
 		}
+
 	}
 	
 	/** 
@@ -311,7 +337,9 @@ class Token{
 	 */
 	public Token(String line) {
 		nixbpe =0;
+		byteSize=0;
 		operand = new String[3];
+		objectCode = "";
 		//initialize 추가
 		parsing(line);
 		

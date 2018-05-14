@@ -1,12 +1,16 @@
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+
 
 
 /**
@@ -73,7 +77,7 @@ public class Assembler {
 		assembler.loadInputFile("input.txt");
 		
 		assembler.pass1();
-		assembler.printSymbolTable("symtab_20160273");
+		assembler.printSymbolTable("symtab_20160273.txt");
 		
 		assembler.pass2();
 		assembler.printObjectCode("output_00000000");
@@ -96,9 +100,28 @@ public class Assembler {
 	 */
 	private void printSymbolTable(String fileName) throws FileNotFoundException {
 		// TODO Auto-generated method stub
-		
-//		FileOutputStream f_sym = new FileOutputStream(fileName+".txt");
-//		SymbolTable s = new SymbolTable();
+		File file = new File(fileName);
+		FileWriter symbol = null;
+
+		try {
+		symbol = new FileWriter(file, true);
+		for(int i=0;i<symtabList.size();i++) {
+			for(int j=0;j<symtabList.get(i).symbolList.size();j++) {
+			symbol.write(symtabList.get(i).symbolList.get(j)+"\t"+Integer.toHexString(symtabList.get(i).locationList.get(j)).toUpperCase() + "\r\n");
+			symbol.flush();
+			
+			}
+		}
+		}catch(IOException e) {
+			e.printStackTrace();
+		} finally {
+			try {
+			if(symbol!=null) symbol.close();
+			} catch(IOException e) {
+			e.printStackTrace();
+			}
+		}
+
 	}
 
 	/** 
@@ -118,7 +141,6 @@ public class Assembler {
 			i_line[i] = lineList.get(i);
 			if(i_line[i].contains(".")) {
 				continue;
-//				i_line[i] = ".\t\t\t";
 			}
 			for(int j=0;j<l_token.length;j++) {
 				l_token = i_line[i].split("\t",4);
@@ -133,22 +155,12 @@ public class Assembler {
 				symtabList.add(new SymbolTable());
 				TokenList.add(new TokenTable(symtabList.get(section),instTable,literalList.get(section)));			
 				}
-			sec[i] = section;
+
 			}
 			
 			TokenList.get(section).putToken(i_line[i]);
-//			TokenList.get(section).getToken(i);
-//			System.out.println("no."+i+"\t"+i_line[i]);
-//			System.out.println("no."+i+"\t"+TokenList.size());
-//			System.out.println(symtabList.size());
-//			System.out.println(i_line[i]);
-//			toTab.putToken(i_line[i]);
-//			System.out.println(toTab.getToken(i).location);
-//			System.out.println(sec[i]);
 		}
-		
-//		System.out.println(TokenList.size());
-		
+				
 	}
 
 	
@@ -158,12 +170,25 @@ public class Assembler {
 	 */
 	private void pass2() {
 		// TODO Auto-generated method stub
+		String output = "";
+		String loc = "";
 		for(int i=0;i<TokenList.size();i++) {
 			for(int j=0;j<TokenList.get(i).tokenList.size();j++) {
-				TokenList.get(i).makeObjectCode(j);
+				Token t = TokenList.get(i).tokenList.get(j);
+	//			System.out.println(t.operator+"\t"+t.objectCode);
 			}
-//			System.out.println(literalList.get(i).locationList+"\t"+literalList.get(i).symbolList);
-
+	//		System.out.println(symtabList.get(i).locationList);
+			
+		}
+//		for(int i=0;i<TokenList.size();i++) {
+//			for(int j=0;j<TokenList.get(i).tokenList.size();j++) {
+//				TokenList.get(i).makeObjectCode(j);
+//				codeList.add(TokenList.get(i).tokenList.get(j).objectCode);
+//			}
+//		}
+		
+		for(int i=0;i<codeList.size();i++){
+			System.out.println(codeList.get(i));
 		}
 	}
 	/**
@@ -183,3 +208,8 @@ public class Assembler {
 	}
 	
 }
+//for(int i=0;i<codeList.size();i++){
+//if(i==0) {
+//	codeList.set(0,"H")
+//}
+//}

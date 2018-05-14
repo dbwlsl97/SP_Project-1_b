@@ -8,6 +8,7 @@ import java.util.Iterator;
 public class SymbolTable {
 	ArrayList<String> symbolList;
 	ArrayList<Integer> locationList;
+	String[] lit;
 	// 기타 literal, external 선언 및 처리방법을 구현한다.
 	
 	/**
@@ -25,10 +26,10 @@ public class SymbolTable {
 	public void putSymbol(String symbol, int location) {
 				symbolList.add(symbol);
 				locationList.add(location);
+
+//				System.out.println(symbol+"\t"+location);
+
 		}
-//		symbolList.add(symbol);
-//		locationList.add(location);
-//		System.out.println(symbol+"\t"+location);
 
 	
 	/**
@@ -38,11 +39,15 @@ public class SymbolTable {
 	 */
 	public void modifySymbol(String symbol, int newLocation) {
 		if(search(symbol)!=-1) {
+			lit = symbol.split("'");
 			for(int i=0;i<symbolList.size();i++) {
-					locationList.set(i, newLocation);					
+				if(symbol.equals(symbolList.get(i)))
+					locationList.set(i, newLocation);	
+					
 				}
+			
 			}
-		}
+	}
 	
 	/**
 	 * 인자로 전달된 symbol이 어떤 주소를 지칭하는지 알려준다. 
