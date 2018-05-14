@@ -175,9 +175,44 @@ public class Assembler {
 		for(int i=0;i<TokenList.size();i++) {
 			for(int j=0;j<TokenList.get(i).tokenList.size();j++) {
 				Token t = TokenList.get(i).tokenList.get(j);
-	//			System.out.println(t.operator+"\t"+t.objectCode);
+				if(t.operator.equals("START")||(t.operator.equals("CSECT"))) {
+					loc = String.format("%06X", symtabList.get(i).locationList.get(j));
+					output = "H"+t.label+"\t"+loc;
+				}
+				else if(t.operator.contains("EXTDEF")) {
+					output += "\nD";
+						for(int a=0;a<t.operand.length;a++) {
+							loc = String.format("%06X", symtabList.get(i).search(t.operand[a])).toUpperCase();
+							output += t.operand[a]+loc;
+					}
+				}
+				else if(t.operator.contains("EXTREF")) {
+					output += "\nR";
+					for(int a=0;a<t.operand.length;a++) {
+						loc = t.operand[a];
+						output += loc;
+					}
+				}
+				else if(t.label.equals("FIRST")) {
+					
+					output +="\nT";
+					loc =String.format("%06X", symtabList.get(i).search(t.label));
+					output += loc;
+					for(int a=0;a<TokenList.get(i).tokenList.size();a++) 
+						TokenList.get(i).makeObjectCode(a);
+						loc = String.format("%02X", t.byteSize);
+					output += loc;
+					
+					output += t.objectCode;
+					
+					if(Integer.parseInt(loc)<=30) {
+	//					output += "\n";
+					}
+				}
+				
+				
 			}
-	//		System.out.println(symtabList.get(i).locationList);
+			System.out.println(output);
 			
 		}
 //		for(int i=0;i<TokenList.size();i++) {
