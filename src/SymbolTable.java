@@ -9,7 +9,7 @@ public class SymbolTable {
 	ArrayList<String> symbolList;
 	ArrayList<Integer> locationList;
 	// 기타 literal, external 선언 및 처리방법을 구현한다.
-
+	
 	/**
 	 * 새로운 Symbol을 table에 추가한다.
 	 * @param symbol : 새로 추가되는 symbol의 label

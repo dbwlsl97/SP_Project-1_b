@@ -41,10 +41,13 @@ public class Assembler {
 	 * Token, 또는 지시어에 따라 만들어진 오브젝트 코드들을 출력 형태로 저장하는 공간. <br>
 	 * 필요한 경우 String 대신 별도의 클래스를 선언하여 ArrayList를 교체해도 무방함.
 	 */
+	ArrayList<SymbolTable> literalList;
+
 	ArrayList<String> codeList;
 	static int section;
 	int end_sec ;
 	int[] sec;
+	
 	/**
 	 * 클래스 초기화. instruction Table을 초기화와 동시에 세팅한다.
 	 * 
@@ -57,6 +60,7 @@ public class Assembler {
 		symtabList = new ArrayList<SymbolTable>();
 		TokenList = new ArrayList<TokenTable>();
 		codeList = new ArrayList<String>();
+		literalList = new ArrayList<SymbolTable>();
 		
 	}
 
@@ -120,13 +124,15 @@ public class Assembler {
 				l_token = i_line[i].split("\t",4);
 			if(l_token[j].equals("START")) {
 				symtabList.add(new SymbolTable());
-				TokenList.add(new TokenTable(symtabList.get(section),instTable));
+				literalList.add(new SymbolTable());
+				TokenList.add(new TokenTable(symtabList.get(section),instTable,literalList.get(section)));
 			}
 			if(l_token[j].equals("CSECT")) {
 				section++;
+				literalList.add(new SymbolTable());
 				symtabList.add(new SymbolTable());
-				TokenList.add(new TokenTable(symtabList.get(section),instTable));
-			}
+				TokenList.add(new TokenTable(symtabList.get(section),instTable,literalList.get(section)));			
+				}
 			sec[i] = section;
 			}
 			
