@@ -22,11 +22,14 @@ public class SymbolTable {
 		symbolList = new ArrayList<String>();
 		locationList = new ArrayList<Integer>();
 	}
-	public void putSymbol(String symbol, int location) {		
-		symbolList.add(symbol);
-		locationList.add(location);
+	public void putSymbol(String symbol, int location) {
+				symbolList.add(symbol);
+				locationList.add(location);
+		}
+//		symbolList.add(symbol);
+//		locationList.add(location);
 //		System.out.println(symbol+"\t"+location);
-	}
+
 	
 	/**
 	 * 기존에 존재하는 symbol 값에 대해서 가리키는 주소값을 변경한다.
@@ -34,8 +37,12 @@ public class SymbolTable {
 	 * @param newLocation : 새로 바꾸고자 하는 주소값
 	 */
 	public void modifySymbol(String symbol, int newLocation) {
-		
-	}
+		if(search(symbol)!=-1) {
+			for(int i=0;i<symbolList.size();i++) {
+					locationList.set(i, newLocation);					
+				}
+			}
+		}
 	
 	/**
 	 * 인자로 전달된 symbol이 어떤 주소를 지칭하는지 알려준다. 

@@ -162,6 +162,8 @@ public class Assembler {
 			for(int j=0;j<TokenList.get(i).tokenList.size();j++) {
 				TokenList.get(i).makeObjectCode(j);
 			}
+//			System.out.println(literalList.get(i).locationList+"\t"+literalList.get(i).symbolList);
+
 		}
 	}
 	/**
