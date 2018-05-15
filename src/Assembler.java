@@ -173,9 +173,9 @@ public class Assembler {
 		// TODO Auto-generated method stub
 		String output = "";
 		String H_code = "";
-		String D_code = "";
-		String R_code = "";
+
 		String T_code ="";
+		String T_addr ="";
 		String size ="";
 		String loc = "";
 		String leng = "";
@@ -189,36 +189,41 @@ public class Assembler {
 					H_code = "H"+t.label+"\t"+loc;
 				}
 				else if(t.operator.contains("EXTDEF")) {
-					D_code += "\nD";
+					H_code += "\nD";
 						for(int a=0;a<t.operand.length;a++) {
 							loc = String.format("%06X", symtabList.get(i).search(t.operand[a])).toUpperCase();
-							D_code += t.operand[a]+loc;
+							H_code += t.operand[a]+loc;
+			
 					}
 				}
 				else if(t.operator.contains("EXTREF")) {
-					R_code += "\nR";
+					H_code += "\nR";
 					for(int a=0;a<t.operand.length;a++) {
 						loc = t.operand[a];
-						R_code += loc;
+						H_code += loc;
+						
 					}
 				}
 				else if(t.label.equals("FIRST")) {
-					output +="\nT";
-					loc = String.format("%06X",symtabList.get(i).search(t.label));
-					output += loc;
+					T_addr +="\nT";
+					loc = String.format("%06X",TokenList.get(i).tokenList.get(j).location);
+					T_addr += loc;
 					for(int m=0;m<TokenList.get(i).tokenList.size();m++) {
+						
 						TokenList.get(i).makeObjectCode(m);
+//						T_addr +="\nT";
+//						T_addr += loc;
 						leng = Integer.toString(TokenList.get(i).tokenList.get(m).byteSize);
 						if(total_leng+Integer.parseInt(leng)>30) {
-	//						output+=Integer.toHexString(total_leng).toUpperCase();
+							size += Integer.toHexString(total_leng).toUpperCase();
 							total_leng=0;
 							loc = String.format("%06X", TokenList.get(i).tokenList.get(m).location);
-							output+="\nT"+loc;
+							T_addr+="\nT"+loc;
 						}
 						total_leng += Integer.parseInt(leng);
 						T_code +=  TokenList.get(i).tokenList.get(m).objectCode;
 					}
-//					output+= Integer.toHexString(total_leng).toUpperCase();
+					size += Integer.toHexString(total_leng).toUpperCase();
 					
 //					for(int a=0;a<TokenList.get(i).tokenList.size();a++) {
 //						TokenList.get(i).makeObjectCode(a);
@@ -239,9 +244,9 @@ public class Assembler {
 				
 				
 				
-			}
-			System.out.println(output);
-			
+			}			
+			System.out.println(H_code);
+			System.out.println(T_addr+size+T_code);
 		}
 //		for(int i=0;i<TokenList.size();i++) {
 //			for(int j=0;j<TokenList.get(i).tokenList.size();j++) {
