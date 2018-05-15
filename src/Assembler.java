@@ -93,16 +93,13 @@ public class Assembler {
 	private void printObjectCode(String fileName) throws FileNotFoundException {
 		// TODO Auto-generated method stub
 		File file = new File(fileName);
-//		FileOutputStream fos = new FileOutputStream(file);
-//		
-//		PrintStream ps = new PrintStream(fos);
-//		System.setOut(ps);
+
+		
 		/* 자바 output 파일 생성 */
 		BufferedWriter output =null; 
 		try {
 			output= new BufferedWriter(new FileWriter(file)); 
 		for(int i=0;i<TokenList.size();i++) {
-	//		codeList.get(i);
 			output.write(codeList.get(i)+"\r\n");
 			
 		}
@@ -333,7 +330,6 @@ public class Assembler {
 			H_code = "";
 			total_leng=0;
 			System.out.println(codeList.get(i));
-
 			}
 	}
 	/**
