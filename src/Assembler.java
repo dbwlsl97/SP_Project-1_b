@@ -50,7 +50,7 @@ public class Assembler {
 	ArrayList<String> codeList;
 	static int section;
 	int end_sec ;
-	int[] sec;
+	int[] sec_arr;
 	
 	/**
 	 * 클래스 초기화. instruction Table을 초기화와 동시에 세팅한다.
@@ -102,15 +102,11 @@ public class Assembler {
 		// TODO Auto-generated method stub
 		File file = new File(fileName);
 		BufferedWriter symbol =null;
-//		FileWriter symbol = null;
-
 		try {
 		symbol = new BufferedWriter(new FileWriter(file));
 		for(int i=0;i<symtabList.size();i++) {
 			for(int j=0;j<symtabList.get(i).symbolList.size();j++) {
 			symbol.write(symtabList.get(i).symbolList.get(j)+"\t"+Integer.toHexString(symtabList.get(i).locationList.get(j)).toUpperCase() + "\r\n");
-//			symbol.flush();
-			
 			}
 		}
 		}catch(IOException e) {
@@ -137,15 +133,15 @@ public class Assembler {
 		
 		String[] i_line = new String[lineList.size()]; //lineList를 한 줄씩 넣은 곳
 		String[] l_token = new String[4]; //각 input line을 탭을 기준으로 자른것을 넣은 곳	
-		sec = new int[lineList.size()];
-		for(int i=0;i<lineList.size();i++) {
+		sec_arr = new int[lineList.size()];
+		for(int i=0;i<lineList.size();i++) { 
 			i_line[i] = lineList.get(i);
 			if(i_line[i].contains(".")) {
 				continue;
 			}
-			for(int j=0;j<l_token.length;j++) {
+			for(int j=0;j<l_token.length;j++) {  // 첫 label이 START나 CSECT 이면 모든  심볼,리터럴,토큰 리스트를 증가 (섹션 구분을 위해) 
 				l_token = i_line[i].split("\t",4);
-			if(l_token[j].equals("START")) {
+			if(l_token[j].equals("START")) {  
 				symtabList.add(new SymbolTable());
 				literalList.add(new SymbolTable());
 				TokenList.add(new TokenTable(symtabList.get(section),instTable,literalList.get(section)));
@@ -159,11 +155,10 @@ public class Assembler {
 
 			}
 			
-			TokenList.get(section).putToken(i_line[i]);
+			TokenList.get(section).putToken(i_line[i]); //각 섹션 당 input.txt 한 줄씩 넣어주기
 		}
 				
 	}
-
 	
 	/**
 	 * pass2 과정을 수행한다.<br>
@@ -172,92 +167,124 @@ public class Assembler {
 	private void pass2() {
 		// TODO Auto-generated method stub
 		String output = "";
+		int litloc =0;
+		int sec = 0;
 		String H_code = "";
-
+		String lit_code = "";
 		String T_code ="";
-		String T_addr ="";
-		String size ="";
+		String M_code = "";
 		String loc = "";
 		String leng = "";
 		int total_leng =0;
+
 		for(int i=0;i<TokenList.size();i++) {
+			sec++;
 			for(int j=0;j<TokenList.get(i).tokenList.size();j++) {
 				Token t = TokenList.get(i).tokenList.get(j);
 				TokenList.get(i).makeObjectCode(j);
+
 				if(t.operator.equals("START")||(t.operator.equals("CSECT"))) {
 					loc = String.format("%06X", symtabList.get(i).locationList.get(j));
 					H_code = "H"+t.label+"\t"+loc;
+					loc=String.format("%X", 0);		
 				}
 				else if(t.operator.contains("EXTDEF")) {
 					H_code += "\nD";
 						for(int a=0;a<t.operand.length;a++) {
 							loc = String.format("%06X", symtabList.get(i).search(t.operand[a])).toUpperCase();
 							H_code += t.operand[a]+loc;
-			
 					}
 				}
 				else if(t.operator.contains("EXTREF")) {
 					H_code += "\nR";
 					for(int a=0;a<t.operand.length;a++) {
 						loc = t.operand[a];
-						H_code += loc;
-						
+						H_code += loc+"";
 					}
+					H_code +="\n";
+					
 				}
-				else if(t.label.equals("FIRST")) {
-					T_addr +="\nT";
+				
+				else if(t.operator.contains("+")) {
+					loc = String.format("%06X", t.location+1);
+					
+					int count =0;
+					int fromIndex = -1;
+					while((fromIndex = t.objectCode.indexOf("0",fromIndex+1))>=0) {
+						count++;
+					}
+					
+					M_code+="M"+loc+String.format("%02X", count)+"+"+t.operand[0]+"\n";
+
+				}
+				else if(t.operator.equals("WORD")) {
+					loc = String.format("%06X", t.location);
+					
+					int count =0;
+					int fromIndex = -1;
+					while((fromIndex = t.objectCode.indexOf("0",fromIndex+1))>=0) {
+						count++;
+					}
+					t.operand = t.operand[0].split("-");
+					M_code+="M"+loc+String.format("%02X", count)+"+"+t.operand[0]+"\n";
+					M_code+="M"+loc+String.format("%02X", count)+"-"+t.operand[1]+"\n";
+					
+				}
+				else if(t.location==0&&!t.objectCode.isEmpty()){
 					loc = String.format("%06X",TokenList.get(i).tokenList.get(j).location);
-					T_addr += loc;
+					output += "T"+loc;
 					for(int m=0;m<TokenList.get(i).tokenList.size();m++) {
-						
 						TokenList.get(i).makeObjectCode(m);
-//						T_addr +="\nT";
-//						T_addr += loc;
+						
 						leng = Integer.toString(TokenList.get(i).tokenList.get(m).byteSize);
+						
 						if(total_leng+Integer.parseInt(leng)>30) {
-							size += Integer.toHexString(total_leng).toUpperCase();
-							total_leng=0;
+						
+							output += String.format("%02X", total_leng)+T_code;
+							total_leng = 0;
 							loc = String.format("%06X", TokenList.get(i).tokenList.get(m).location);
-							T_addr+="\nT"+loc;
+							output += "\nT"+loc;
+							T_code = "";
 						}
 						total_leng += Integer.parseInt(leng);
 						T_code +=  TokenList.get(i).tokenList.get(m).objectCode;
+						
 					}
-					size += Integer.toHexString(total_leng).toUpperCase();
-					
-//					for(int a=0;a<TokenList.get(i).tokenList.size();a++) {
-//						TokenList.get(i).makeObjectCode(a);
-//						loc = String.format("%06X",symtabList.get(i).search(t.label));
-//						leng = Integer.toString(TokenList.get(i).tokenList.get(a).byteSize);
-//						total_leng += Integer.parseInt(leng);
-//						if(total_leng>=30) {
-////							 = String.format("%02X", TokenList.get(i).tokenList.get(a).byteSize);
-//							output += Integer.toHexString(total_leng).toUpperCase();
-//							output += "\nT"+loc;
-//							total_leng =0;
-//						}
-//						output += TokenList.get(i).tokenList.get(a).objectCode;
-//						
-//						}
+					output += String.format("%02X", total_leng)+T_code+"\n";		
+		
 
 				}
+				else if(t.operand[0].contains("=")) {
+					for(int a=0;a<TokenList.get(i).tokenList.size();a++) {
+						if(literalList.get(a).search(t.operand[0])!=-1) {
+							litloc = literalList.get(a).search(t.operand[0]);
+							break;
+						}
+					
+					}
+					for(int b=0;b<TokenList.get(i).tokenList.size();b++) {
+						if(litloc==TokenList.get(i).tokenList.get(b).location&&litloc!=0) {
+							if(t.operand[0].contains("=C"))
+							lit_code += "T"+String.format("%06X", litloc)+String.format("%02X", TokenList.get(i).tokenList.get(b).litSize)+TokenList.get(i).tokenList.get(b).literal+"\n";
+//							System.out.println(output);	
+							
+						}
+					}
+				}
 				
-				
-				
-			}			
-			System.out.println(H_code);
-			System.out.println(T_addr+size+T_code);
-		}
-//		for(int i=0;i<TokenList.size();i++) {
-//			for(int j=0;j<TokenList.get(i).tokenList.size();j++) {
-//				TokenList.get(i).makeObjectCode(j);
-//				codeList.add(TokenList.get(i).tokenList.get(j).objectCode);
-//			}
-//		}
+			}
+			System.out.println(H_code+output+lit_code+M_code+"E");
+			codeList.add(H_code+output+lit_code+M_code+"E");
+			M_code = "";
+			output = "";
+			T_code = "";
+			lit_code = "";
+			H_code = "";
+			total_leng=0;
+//			System.out.println(codeList);
+
+			}
 		
-		for(int i=0;i<codeList.size();i++){
-			System.out.println(codeList.get(i));
-		}
 	}
 	/**
 	 * inputFile을 읽어들여서 lineList에 저장한다.<br>
@@ -271,13 +298,7 @@ public class Assembler {
 			String rline = rInput.readLine();
 			if(rline==null) break;
 			lineList.add(rline);
-
 		}
 	}
 	
 }
-//for(int i=0;i<codeList.size();i++){
-//if(i==0) {
-//	codeList.set(0,"H")
-//}
-//}

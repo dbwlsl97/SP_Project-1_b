@@ -101,12 +101,8 @@ public class TokenTable {
 				loc2 = symTab.search(t.operand[1]);
 				locctr = loc1 - loc2;
 				symTab.modifySymbol(t.label, locctr);
-//				symTab.putSymbol(t.label, locctr);
-//				System.out.println(t.label+"\t"+locctr);
 				t.location = locctr;
-
 		}
-//				System.out.println(t.label+"\t"+locctr);
 		}
 		else if(t.operator.equals("RESW")) {
 			locctr += (3*Integer.parseInt(t.operand[0]));
@@ -131,16 +127,12 @@ public class TokenTable {
 			if(litTab.search(t.operand[0])==-1) {		
 				litTab.putSymbol(t.operand[0], locctr);
 				if(t.operand[0].contains("X")) {
-					locctr+=1;
+	//				locctr+=1;
 				t.byteSize +=1;
 				}
 			}
-//			System.out.println(litTab.locationList+"\t"+litTab.symbolList);
 				}
 	
-	
-
-//		System.out.println(t.location);
 	}
 	
 	/**
@@ -177,13 +169,10 @@ public class TokenTable {
 			objcode += op.opcode << 24;
 			objcode += tokenList.get(index).nixbpe <<20 ;
 			tokenList.get(index).objectCode = String.format("%X", objcode);
-//			tokenList.get(index).byteSize = 4;
-//			System.out.println(op.instruction + "\t"+ tokenList.get(index).objectCode);
 		}
 		else if(tokenList.get(index).operator.equals("BYTE")) {
 			int a = 0;
 			String[] str = tokenList.get(index).operand[0].split("'");
-//			a = Integer.parseInt(str[1]);
 			tokenList.get(index).objectCode = String.format("%02X", Integer.parseInt(str[1], 16));
 		}
 		else if(tokenList.get(index).operator.equals("WORD")) {
@@ -233,7 +222,7 @@ public class TokenTable {
 					}
 				tokenList.get(index).objectCode = String.format("%02X%02X", op.opcode, format_2);
 	//			tokenList.get(index).byteSize =2;
-//				System.out.println(op.instruction + "\t"+ tokenList.get(index).objectCode);
+	//			System.out.println(op.instruction + "\t"+ tokenList.get(index).objectCode);
 			}
 			else if(i_format==3) {
 //				tokenList.get(index).byteSize =3;
@@ -266,28 +255,31 @@ public class TokenTable {
 						if(tokenList.get(i).operator.equals("LTORG")) {
 						litTab.modifySymbol(tokenList.get(index).operand[0], tokenList.get(i).location);	
 						lit = litTab.lit[1].toCharArray();
+						if(tokenList.get(i).literal.isEmpty()) {
 						for(int j=0;j<lit.length;j++) {
 							tokenList.get(i).literal += String.format("%02X", (int)lit[j]); // =C 일 때
+							tokenList.get(i).litSize +=1;
 						}
-//						System.out.println(tokenList.get(i).operator + "\t"+ tokenList.get(i).objectCode);	
+					
+						}
 						break;
 						}
 						else {
 						litTab.modifySymbol(tokenList.get(index).operand[0], tokenList.get(i).location); // =X 일 때
 						if(i==tokenList.size()-1) {
-							tokenList.get(i).literal = String.format("%02X", Integer.parseInt(litTab.lit[1], 16));
+							tokenList.get(i).objectCode = String.format("%02X", Integer.parseInt(litTab.lit[1], 16));
 //							System.out.println(tokenList.get(i).operator + "\t"+ tokenList.get(i).objectCode);
 							break;
+						}				
 						}
-						}
-					}					
+					}
 					T_addr = litTab.search(tokenList.get(index).operand[0]);
 					PC_addr = tokenList.get(index+1).location;
 					objcode += (T_addr - PC_addr);
 					tokenList.get(index).objectCode = String.format("%06X", objcode);
-//					System.out.println(op.instruction + "\t"+ tokenList.get(index).objectCode + "\t");	
-				//	break;
-				}
+	//				System.out.println(op.instruction + "\t"+ tokenList.get(index).objectCode + "\t");	
+				}			
+
 				else if(tokenList.get(index).operand[0].isEmpty()) {
 					tokenList.get(index).setFlag(nFlag, 1);
 					tokenList.get(index).setFlag(iFlag, 1);
@@ -302,8 +294,9 @@ public class TokenTable {
 					objcode += tokenList.get(index).nixbpe<<12;
 					T_addr = symTab.search(tokenList.get(index).operand[0]);
 					PC_addr = tokenList.get(index+1).location;
-					if(T_addr <= PC_addr) 
+					if(T_addr <= PC_addr) {
 						objcode += ((T_addr - PC_addr) & 0x00000FFF);
+					}
 					else
 					objcode += (T_addr - PC_addr);
 					tokenList.get(index).objectCode = String.format("%06X", objcode);
@@ -344,6 +337,7 @@ class Token{
 	String objectCode;
 	String literal;
 	int byteSize;
+	int litSize;
 //	static int count; //line 번호 세기 = index
 	/**
 	 * 클래스를 초기화 하면서 바로 line의 의미 분석을 수행한다. 
@@ -354,6 +348,7 @@ class Token{
 		byteSize=0;
 		operand = new String[3];
 		objectCode = "";
+		literal = "";
 		//initialize 추가
 		parsing(line);
 		
