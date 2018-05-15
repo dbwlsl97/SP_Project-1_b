@@ -72,17 +72,22 @@ public class TokenTable {
 				i_format = instTab.instMap.get(f_opt).format;
 			}                              
 			locctr +=4;
+			t.byteSize +=4;
 		}
 		else if(instTab.instMap.containsKey(t.operator)) {
 			i_format = instTab.instMap.get(t.operator).format;
 			if(i_format==1) {
 				locctr +=1;
+				t.byteSize +=1;
 			}
 			else if(i_format==2) {
 				locctr +=2;
+				t.byteSize +=2;
 			}
 			else if(i_format==3) {
 				locctr +=3;
+				t.byteSize +=3;
+
 			}
 		}
 //		else if(t.operator.equals("END")) {
@@ -99,6 +104,7 @@ public class TokenTable {
 //				symTab.putSymbol(t.label, locctr);
 //				System.out.println(t.label+"\t"+locctr);
 				t.location = locctr;
+
 		}
 //				System.out.println(t.label+"\t"+locctr);
 		}
@@ -110,17 +116,25 @@ public class TokenTable {
 		}
 		else if(t.operator.equals("BYTE")) {
 			locctr += 1;
+			t.byteSize +=1;
+
 		}
-		else if((t.operator.equals("WORD"))||(t.operator.equals("LTORG"))) {
+		else if(t.operator.equals("WORD")) {
 			locctr += 3;
+			t.byteSize +=3;
+		}
+		else if(t.operator.equals("LTORG"))	{
+			locctr +=3;
 		}
 
 		if(t.operand[0].contains("=")) {
 			if(litTab.search(t.operand[0])==-1) {		
 				litTab.putSymbol(t.operand[0], locctr);
-				if(t.operand[0].contains("X"))
+				if(t.operand[0].contains("X")) {
 					locctr+=1;
-					}
+				t.byteSize +=1;
+				}
+			}
 //			System.out.println(litTab.locationList+"\t"+litTab.symbolList);
 				}
 	
@@ -163,7 +177,7 @@ public class TokenTable {
 			objcode += op.opcode << 24;
 			objcode += tokenList.get(index).nixbpe <<20 ;
 			tokenList.get(index).objectCode = String.format("%X", objcode);
-			tokenList.get(index).byteSize +=4;
+//			tokenList.get(index).byteSize = 4;
 //			System.out.println(op.instruction + "\t"+ tokenList.get(index).objectCode);
 		}
 		else if(tokenList.get(index).operator.equals("BYTE")) {
@@ -171,7 +185,6 @@ public class TokenTable {
 			String[] str = tokenList.get(index).operand[0].split("'");
 //			a = Integer.parseInt(str[1]);
 			tokenList.get(index).objectCode = String.format("%02X", Integer.parseInt(str[1], 16));
-			tokenList.get(index).byteSize +=1;
 		}
 		else if(tokenList.get(index).operator.equals("WORD")) {
 			int a =0, b=0;
@@ -180,7 +193,7 @@ public class TokenTable {
 			if(a==-1||b==-1) {
 				tokenList.get(index).objectCode = String.format("%06X", 0);
 			}
-			tokenList.get(index).byteSize +=3;
+//			tokenList.get(index).byteSize =3;
 		}
 		else if(instTab.instMap.containsKey(tokenList.get(index).operator)) {
 			i_format = instTab.instMap.get(tokenList.get(index).operator).format;
@@ -219,11 +232,11 @@ public class TokenTable {
 					}
 					}
 				tokenList.get(index).objectCode = String.format("%02X%02X", op.opcode, format_2);
-				tokenList.get(index).byteSize +=2;
+	//			tokenList.get(index).byteSize =2;
 //				System.out.println(op.instruction + "\t"+ tokenList.get(index).objectCode);
 			}
 			else if(i_format==3) {
-				tokenList.get(index).byteSize +=3;
+//				tokenList.get(index).byteSize =3;
 				objcode = op.opcode<<16;
 				if(tokenList.get(index).operand[0].contains("#")) {
 					T_addr = Integer.parseInt(tokenList.get(index).operand[0].substring(1));
@@ -254,7 +267,7 @@ public class TokenTable {
 						litTab.modifySymbol(tokenList.get(index).operand[0], tokenList.get(i).location);	
 						lit = litTab.lit[1].toCharArray();
 						for(int j=0;j<lit.length;j++) {
-							tokenList.get(i).objectCode += String.format("%02X", (int)lit[j]); // =C 일 때
+							tokenList.get(i).literal += String.format("%02X", (int)lit[j]); // =C 일 때
 						}
 //						System.out.println(tokenList.get(i).operator + "\t"+ tokenList.get(i).objectCode);	
 						break;
@@ -262,7 +275,7 @@ public class TokenTable {
 						else {
 						litTab.modifySymbol(tokenList.get(index).operand[0], tokenList.get(i).location); // =X 일 때
 						if(i==tokenList.size()-1) {
-							tokenList.get(i).objectCode = String.format("%02X", Integer.parseInt(litTab.lit[1], 16));
+							tokenList.get(i).literal = String.format("%02X", Integer.parseInt(litTab.lit[1], 16));
 //							System.out.println(tokenList.get(i).operator + "\t"+ tokenList.get(i).objectCode);
 							break;
 						}
@@ -329,6 +342,7 @@ class Token{
 //	InstTable instTab;
 	// object code 생성 단계에서 사용되는 변수들 
 	String objectCode;
+	String literal;
 	int byteSize;
 //	static int count; //line 번호 세기 = index
 	/**

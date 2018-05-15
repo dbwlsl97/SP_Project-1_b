@@ -101,14 +101,15 @@ public class Assembler {
 	private void printSymbolTable(String fileName) throws FileNotFoundException {
 		// TODO Auto-generated method stub
 		File file = new File(fileName);
-		FileWriter symbol = null;
+		BufferedWriter symbol =null;
+//		FileWriter symbol = null;
 
 		try {
-		symbol = new FileWriter(file, true);
+		symbol = new BufferedWriter(new FileWriter(file));
 		for(int i=0;i<symtabList.size();i++) {
 			for(int j=0;j<symtabList.get(i).symbolList.size();j++) {
 			symbol.write(symtabList.get(i).symbolList.get(j)+"\t"+Integer.toHexString(symtabList.get(i).locationList.get(j)).toUpperCase() + "\r\n");
-			symbol.flush();
+//			symbol.flush();
 			
 			}
 		}
@@ -171,44 +172,71 @@ public class Assembler {
 	private void pass2() {
 		// TODO Auto-generated method stub
 		String output = "";
+		String H_code = "";
+		String D_code = "";
+		String R_code = "";
+		String T_code ="";
+		String size ="";
 		String loc = "";
+		String leng = "";
+		int total_leng =0;
 		for(int i=0;i<TokenList.size();i++) {
 			for(int j=0;j<TokenList.get(i).tokenList.size();j++) {
 				Token t = TokenList.get(i).tokenList.get(j);
+				TokenList.get(i).makeObjectCode(j);
 				if(t.operator.equals("START")||(t.operator.equals("CSECT"))) {
 					loc = String.format("%06X", symtabList.get(i).locationList.get(j));
-					output = "H"+t.label+"\t"+loc;
+					H_code = "H"+t.label+"\t"+loc;
 				}
 				else if(t.operator.contains("EXTDEF")) {
-					output += "\nD";
+					D_code += "\nD";
 						for(int a=0;a<t.operand.length;a++) {
 							loc = String.format("%06X", symtabList.get(i).search(t.operand[a])).toUpperCase();
-							output += t.operand[a]+loc;
+							D_code += t.operand[a]+loc;
 					}
 				}
 				else if(t.operator.contains("EXTREF")) {
-					output += "\nR";
+					R_code += "\nR";
 					for(int a=0;a<t.operand.length;a++) {
 						loc = t.operand[a];
-						output += loc;
+						R_code += loc;
 					}
 				}
 				else if(t.label.equals("FIRST")) {
-					
 					output +="\nT";
-					loc =String.format("%06X", symtabList.get(i).search(t.label));
+					loc = String.format("%06X",symtabList.get(i).search(t.label));
 					output += loc;
-					for(int a=0;a<TokenList.get(i).tokenList.size();a++) 
-						TokenList.get(i).makeObjectCode(a);
-						loc = String.format("%02X", t.byteSize);
-					output += loc;
-					
-					output += t.objectCode;
-					
-					if(Integer.parseInt(loc)<=30) {
-	//					output += "\n";
+					for(int m=0;m<TokenList.get(i).tokenList.size();m++) {
+						TokenList.get(i).makeObjectCode(m);
+						leng = Integer.toString(TokenList.get(i).tokenList.get(m).byteSize);
+						if(total_leng+Integer.parseInt(leng)>30) {
+	//						output+=Integer.toHexString(total_leng).toUpperCase();
+							total_leng=0;
+							loc = String.format("%06X", TokenList.get(i).tokenList.get(m).location);
+							output+="\nT"+loc;
+						}
+						total_leng += Integer.parseInt(leng);
+						T_code +=  TokenList.get(i).tokenList.get(m).objectCode;
 					}
+//					output+= Integer.toHexString(total_leng).toUpperCase();
+					
+//					for(int a=0;a<TokenList.get(i).tokenList.size();a++) {
+//						TokenList.get(i).makeObjectCode(a);
+//						loc = String.format("%06X",symtabList.get(i).search(t.label));
+//						leng = Integer.toString(TokenList.get(i).tokenList.get(a).byteSize);
+//						total_leng += Integer.parseInt(leng);
+//						if(total_leng>=30) {
+////							 = String.format("%02X", TokenList.get(i).tokenList.get(a).byteSize);
+//							output += Integer.toHexString(total_leng).toUpperCase();
+//							output += "\nT"+loc;
+//							total_leng =0;
+//						}
+//						output += TokenList.get(i).tokenList.get(a).objectCode;
+//						
+//						}
+
 				}
+				
 				
 				
 			}
