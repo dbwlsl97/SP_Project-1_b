@@ -32,7 +32,7 @@ public class InstTable {
 	 * @throws IOException 
 	 */
 	public void openFile(String fileName) throws IOException { //inst.dat를 한 줄 씩 불러오기
-		BufferedReader rInst = new BufferedReader(new FileReader("./inst.data"));
+		BufferedReader rInst = new BufferedReader(new FileReader("./inst.data")); 
 		while(true) {
 			String rline = rInst.readLine();
 			if(rline==null) break;
@@ -74,13 +74,13 @@ class Instruction {
 		// TODO Auto-generated method stub
 		String[] inst_token = line.split("\t");
 		instruction = inst_token[0];
-		if(inst_token[1].equals("3/4")) {
-			format = 3;
+		if(inst_token[1].equals("3/4")) { 
+			format = 3; // 형식이 3/4 일 때, 3으로 변경해줌
 		}
 		else {
 			format = Integer.parseInt(inst_token[1]);
 		}
-		opcode = Integer.parseInt(inst_token[2],16);
+		opcode = Integer.parseInt(inst_token[2],16); //opcode는  16진수로 이용하기 위함
 		numberOfOperand = Integer.parseInt(inst_token[3]);
 	}
 

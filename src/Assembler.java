@@ -6,6 +6,7 @@ import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -80,17 +81,40 @@ public class Assembler {
 		assembler.printSymbolTable("symtab_20160273.txt");
 		
 		assembler.pass2();
-		assembler.printObjectCode("output_00000000");
+		assembler.printObjectCode("output_20160273.txt");
 		
 	}
 
 	/**
 	 * 작성된 codeList를 출력형태에 맞게 출력한다.<br>
 	 * @param fileName : 저장되는 파일 이름
+	 * @throws FileNotFoundException 
 	 */
-	private void printObjectCode(String fileName) {
+	private void printObjectCode(String fileName) throws FileNotFoundException {
 		// TODO Auto-generated method stub
-		
+		File file = new File(fileName);
+//		FileOutputStream fos = new FileOutputStream(file);
+//		
+//		PrintStream ps = new PrintStream(fos);
+//		System.setOut(ps);
+		/* 자바 output 파일 생성 */
+		BufferedWriter output =null; 
+		try {
+			output= new BufferedWriter(new FileWriter(file)); 
+		for(int i=0;i<TokenList.size();i++) {
+	//		codeList.get(i);
+			output.write(codeList.get(i)+"\r\n");
+			
+		}
+		}catch(IOException e) {
+			e.printStackTrace();
+		} finally {
+			try {
+			if(output!=null) output.close();
+			} catch(IOException e) {
+			e.printStackTrace();
+			}
+		}
 	}
 	
 	/**
@@ -100,6 +124,8 @@ public class Assembler {
 	 */
 	private void printSymbolTable(String fileName) throws FileNotFoundException {
 		// TODO Auto-generated method stub
+		
+		/* 자바 symboltable 파일 생성 */
 		File file = new File(fileName);
 		BufferedWriter symbol =null;
 		try {
@@ -151,6 +177,7 @@ public class Assembler {
 				literalList.add(new SymbolTable());
 				symtabList.add(new SymbolTable());
 				TokenList.add(new TokenTable(symtabList.get(section),instTable,literalList.get(section)));			
+				
 				}
 
 			}
@@ -168,7 +195,6 @@ public class Assembler {
 		// TODO Auto-generated method stub
 		String output = "";
 		int litloc =0;
-		int sec = 0;
 		String H_code = "";
 		String lit_code = "";
 		String T_code ="";
@@ -176,26 +202,50 @@ public class Assembler {
 		String loc = "";
 		String leng = "";
 		int total_leng =0;
+		int[] addr = new int[TokenList.size()];
+		int end = 0;
 
-		for(int i=0;i<TokenList.size();i++) {
-			sec++;
+		for(int c=0;c<TokenList.size();c++) { // 해당 섹션에 대한 전체 길이 구하기
+			for(int d=0;d<TokenList.get(c).tokenList.size();d++) {
+				Token a = TokenList.get(c).tokenList.get(d);
+				if(d==TokenList.get(c).tokenList.size()-1) {
+					if(c==0) // 섹션 0번은 BUFEND 주소값
+						end = symtabList.get(c).search("BUFEND");	
+					else //그 외 섹션은 현재 주소 + byteSize 
+						end = a.location + a.byteSize;
+					 addr[c] = end; //배열에 넣기
+					break;
+				}		
+			}
+
+		}
+		for(int i=0;i<TokenList.size();i++) { // 헤더, 텍스트, 모디피케이션 써주기
 			for(int j=0;j<TokenList.get(i).tokenList.size();j++) {
 				Token t = TokenList.get(i).tokenList.get(j);
 				TokenList.get(i).makeObjectCode(j);
-
-				if(t.operator.equals("START")||(t.operator.equals("CSECT"))) {
+				
+				if(t.operator.equals("START")||(t.operator.equals("CSECT"))) { // START나 CSECT 만나면 H 쓰기
 					loc = String.format("%06X", symtabList.get(i).locationList.get(j));
 					H_code = "H"+t.label+"\t"+loc;
-					loc=String.format("%X", 0);		
+					if(i==0) //위에서 구한 해당 섹션에 대한 전체 길이 넣기
+						H_code += String.format("%06X", addr[0]);
+					else if(i==1)
+						H_code += String.format("%06X", addr[1]);
+					else
+						H_code += String.format("%06X", addr[2]);
+
+					
+					loc=String.format("%X", 0);	// 0 으로 초기화
+					
 				}
-				else if(t.operator.contains("EXTDEF")) {
+				else if(t.operator.contains("EXTDEF")) { //EXTDEF 처리
 					H_code += "\nD";
 						for(int a=0;a<t.operand.length;a++) {
 							loc = String.format("%06X", symtabList.get(i).search(t.operand[a])).toUpperCase();
 							H_code += t.operand[a]+loc;
 					}
 				}
-				else if(t.operator.contains("EXTREF")) {
+				else if(t.operator.contains("EXTREF")) { //EXTREF 처리
 					H_code += "\nR";
 					for(int a=0;a<t.operand.length;a++) {
 						loc = t.operand[a];
@@ -205,7 +255,7 @@ public class Assembler {
 					
 				}
 				
-				else if(t.operator.contains("+")) {
+				else if(t.operator.contains("+")) { // 4형식 M 처리
 					loc = String.format("%06X", t.location+1);
 					
 					int count =0;
@@ -217,9 +267,9 @@ public class Assembler {
 					M_code+="M"+loc+String.format("%02X", count)+"+"+t.operand[0]+"\n";
 
 				}
-				else if(t.operator.equals("WORD")) {
+				
+				else if(t.operator.equals("WORD")) { // WORD M 처리
 					loc = String.format("%06X", t.location);
-					
 					int count =0;
 					int fromIndex = -1;
 					while((fromIndex = t.objectCode.indexOf("0",fromIndex+1))>=0) {
@@ -230,15 +280,16 @@ public class Assembler {
 					M_code+="M"+loc+String.format("%02X", count)+"-"+t.operand[1]+"\n";
 					
 				}
-				else if(t.location==0&&!t.objectCode.isEmpty()){
-					loc = String.format("%06X",TokenList.get(i).tokenList.get(j).location);
-					output += "T"+loc;
+				
+				else if(t.location==0&&!t.objectCode.isEmpty()){ // 현재 주소가 0이고, 기계어코드가 있다면 T 써주기
+					loc = String.format("%06X",TokenList.get(i).tokenList.get(j).location); //주소 가져오기
+					output += "T"+loc; // output 변수에 시작주소와 오브젝트 코드 라인 길이를 써줌
 					for(int m=0;m<TokenList.get(i).tokenList.size();m++) {
 						TokenList.get(i).makeObjectCode(m);
 						
 						leng = Integer.toString(TokenList.get(i).tokenList.get(m).byteSize);
 						
-						if(total_leng+Integer.parseInt(leng)>30) {
+						if(total_leng+Integer.parseInt(leng)>30) { // 여태까지의 byte 총 byteSize + 지금 들어올 byteSize가 30이 넘어가면 개행 넣기
 						
 							output += String.format("%02X", total_leng)+T_code;
 							total_leng = 0;
@@ -250,41 +301,40 @@ public class Assembler {
 						T_code +=  TokenList.get(i).tokenList.get(m).objectCode;
 						
 					}
-					output += String.format("%02X", total_leng)+T_code+"\n";		
+					output += String.format("%02X", total_leng)+T_code+"\n"; // 라인 총 길이와 Text 넣기
 		
 
 				}
-				else if(t.operand[0].contains("=")) {
+				else if(t.operand[0].contains("=")) { //리터럴 처리 부분 
 					for(int a=0;a<TokenList.get(i).tokenList.size();a++) {
-						if(literalList.get(a).search(t.operand[0])!=-1) {
-							litloc = literalList.get(a).search(t.operand[0]);
+						if(literalList.get(a).search(t.operand[0])!=-1) { 
+							litloc = literalList.get(a).search(t.operand[0]); //리터럴 테이블에 검색
 							break;
 						}
 					
 					}
-					for(int b=0;b<TokenList.get(i).tokenList.size();b++) {
-						if(litloc==TokenList.get(i).tokenList.get(b).location&&litloc!=0) {
-							if(t.operand[0].contains("=C"))
-							lit_code += "T"+String.format("%06X", litloc)+String.format("%02X", TokenList.get(i).tokenList.get(b).litSize)+TokenList.get(i).tokenList.get(b).literal+"\n";
-//							System.out.println(output);	
-							
+					for(int b=0;b<TokenList.get(i).tokenList.size();b++) { 
+						if(litloc==TokenList.get(i).tokenList.get(b).location&&litloc!=0) { 
+							if(t.operand[0].contains("=C")) // 문자일 때 리터럴처리
+							lit_code += "T"+String.format("%06X", litloc)+String.format("%02X", TokenList.get(i).tokenList.get(b).litSize)
+										+TokenList.get(i).tokenList.get(b).literal+"\n";	
 						}
 					}
 				}
 				
 			}
-			System.out.println(H_code+output+lit_code+M_code+"E");
-			codeList.add(H_code+output+lit_code+M_code+"E");
-			M_code = "";
+			codeList.add(H_code+output+lit_code+M_code+"E"); // codeList를 섹션 별로 저장함
+			
+		/* codeList에 추가해준 code 들을 초기화 해줌 */
+			M_code = ""; 
 			output = "";
 			T_code = "";
 			lit_code = "";
 			H_code = "";
 			total_leng=0;
-//			System.out.println(codeList);
+			System.out.println(codeList.get(i));
 
 			}
-		
 	}
 	/**
 	 * inputFile을 읽어들여서 lineList에 저장한다.<br>
@@ -293,6 +343,7 @@ public class Assembler {
 	 */
 	private void loadInputFile(String inputFile) throws IOException {
 		// TODO Auto-generated method stub
+		//Input.txt 불러오기 
 		BufferedReader rInput = new BufferedReader(new FileReader("./input.txt"));
 		while(true) {
 			String rline = rInput.readLine();

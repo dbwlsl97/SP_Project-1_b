@@ -8,7 +8,7 @@ import java.util.Iterator;
 public class SymbolTable {
 	ArrayList<String> symbolList;
 	ArrayList<Integer> locationList;
-	String[] lit;
+	String[] lit; //리터럴을 byte단위로 구분하기 위한 변수
 	// 기타 literal, external 선언 및 처리방법을 구현한다.
 	
 	/**
@@ -24,11 +24,8 @@ public class SymbolTable {
 		locationList = new ArrayList<Integer>();
 	}
 	public void putSymbol(String symbol, int location) {
-				symbolList.add(symbol);
+				symbolList.add(symbol); 
 				locationList.add(location);
-
-//				System.out.println(symbol+"\t"+location);
-
 		}
 
 	
@@ -39,9 +36,9 @@ public class SymbolTable {
 	 */
 	public void modifySymbol(String symbol, int newLocation) {
 		if(search(symbol)!=-1) {
-			lit = symbol.split("'");
-			for(int i=0;i<symbolList.size();i++) {
-				if(symbol.equals(symbolList.get(i)))
+			lit = symbol.split("'"); //리터럴이라면 '을 기준으로 분리하고
+			for(int i=0;i<symbolList.size();i++) { 
+				if(symbol.equals(symbolList.get(i))) //현재 심볼이 심볼리스트에 있다면 변경해주기
 					locationList.set(i, newLocation);	
 					
 				}
@@ -56,10 +53,10 @@ public class SymbolTable {
 	 */
 	public int search(String symbol) {
 		int address = 0;
-		if(symbolList.contains(symbol)) {
+		if(symbolList.contains(symbol)) { //심볼테이블에 현재 심볼이 존재한다면
 			for(int i=0;i<symbolList.size();i++) {
-				if(symbol.equals(symbolList.get(i))) {
-					address = locationList.get(i);					
+				if(symbol.equals(symbolList.get(i))) { 
+					address = locationList.get(i);		// 주소를 리턴			
 				}
 			}
 		}
@@ -67,8 +64,5 @@ public class SymbolTable {
 			return -1;
 		}
 		return address;
-	}
-	
-
-	
+	}	
 }
