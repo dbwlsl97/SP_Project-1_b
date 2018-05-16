@@ -236,19 +236,19 @@ public class Assembler {
 					
 				}
 				else if(t.operator.contains("EXTDEF")) { //EXTDEF 처리
-					H_code += "\nD";
+					H_code += "\r\nD";
 						for(int a=0;a<t.operand.length;a++) {
 							loc = String.format("%06X", symtabList.get(i).search(t.operand[a])).toUpperCase();
 							H_code += t.operand[a]+loc;
 					}
 				}
 				else if(t.operator.contains("EXTREF")) { //EXTREF 처리
-					H_code += "\nR";
+					H_code += "\r\nR";
 					for(int a=0;a<t.operand.length;a++) {
 						loc = t.operand[a];
 						H_code += loc+"";
 					}
-					H_code +="\n";
+					H_code +="\r\n";
 					
 				}
 				
@@ -261,7 +261,7 @@ public class Assembler {
 						count++;
 					}
 					
-					M_code+="M"+loc+String.format("%02X", count)+"+"+t.operand[0]+"\n";
+					M_code+="M"+loc+String.format("%02X", count)+"+"+t.operand[0]+"\r\n";
 
 				}
 				
@@ -273,8 +273,8 @@ public class Assembler {
 						count++;
 					}
 					t.operand = t.operand[0].split("-");
-					M_code+="M"+loc+String.format("%02X", count)+"+"+t.operand[0]+"\n";
-					M_code+="M"+loc+String.format("%02X", count)+"-"+t.operand[1]+"\n";
+					M_code+="M"+loc+String.format("%02X", count)+"+"+t.operand[0]+"\r\n";
+					M_code+="M"+loc+String.format("%02X", count)+"-"+t.operand[1]+"\r\n";
 					
 				}
 				
@@ -291,14 +291,14 @@ public class Assembler {
 							output += String.format("%02X", total_leng)+T_code;
 							total_leng = 0;
 							loc = String.format("%06X", TokenList.get(i).tokenList.get(m).location);
-							output += "\nT"+loc;
+							output += "\r\nT"+loc;
 							T_code = "";
 						}
 						total_leng += Integer.parseInt(leng);
 						T_code +=  TokenList.get(i).tokenList.get(m).objectCode;
 						
 					}
-					output += String.format("%02X", total_leng)+T_code+"\n"; // 라인 총 길이와 Text 넣기
+					output += String.format("%02X", total_leng)+T_code+"\r\n"; // 라인 총 길이와 Text 넣기
 		
 
 				}
@@ -314,10 +314,11 @@ public class Assembler {
 						if(litloc==TokenList.get(i).tokenList.get(b).location&&litloc!=0) { 
 							if(t.operand[0].contains("=C")) // 문자일 때 리터럴처리
 							lit_code += "T"+String.format("%06X", litloc)+String.format("%02X", TokenList.get(i).tokenList.get(b).litSize)
-										+TokenList.get(i).tokenList.get(b).literal+"\n";	
+										+TokenList.get(i).tokenList.get(b).literal+"\r\n";	
 						}
 					}
 				}
+				
 				
 			}
 			codeList.add(H_code+output+lit_code+M_code+"E"); // codeList를 섹션 별로 저장함
