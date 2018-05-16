@@ -21,7 +21,7 @@ import java.util.Map;
  * 1) 처음 시작하면 Instruction 명세를 읽어들여서 assembler를 세팅한다. <br>
  * 2) 사용자가 작성한 input 파일을 읽어들인 후 저장한다. <br>
  * 3) input 파일의 문장들을 단어별로 분할하고 의미를 파악해서 정리한다. (pass1) <br>
- * 4) 분석된 내용을 바탕으로 컴퓨터가 사용할 수 있는 object code를 생성한다. (pass2) <br>
+ * 4) 분석된 내용을 바탕으로 컴퓨터 가 사용할 수 있는 object code를 생성한다. (pass2) <br>
  * 
  * <br><br>
  * 작성중의 유의사항 : <br>
@@ -50,8 +50,6 @@ public class Assembler {
 
 	ArrayList<String> codeList;
 	static int section;
-	int end_sec ;
-	int[] sec_arr;
 	
 	/**
 	 * 클래스 초기화. instruction Table을 초기화와 동시에 세팅한다.
@@ -65,7 +63,7 @@ public class Assembler {
 		symtabList = new ArrayList<SymbolTable>();
 		TokenList = new ArrayList<TokenTable>();
 		codeList = new ArrayList<String>();
-		literalList = new ArrayList<SymbolTable>();
+		literalList = new ArrayList<SymbolTable>(); // 심볼테이블 클래스를 이용한 리터럴리스트 생성
 		
 	}
 
@@ -156,7 +154,7 @@ public class Assembler {
 		
 		String[] i_line = new String[lineList.size()]; //lineList를 한 줄씩 넣은 곳
 		String[] l_token = new String[4]; //각 input line을 탭을 기준으로 자른것을 넣은 곳	
-		sec_arr = new int[lineList.size()];
+
 		for(int i=0;i<lineList.size();i++) { 
 			i_line[i] = lineList.get(i);
 			if(i_line[i].contains(".")) {
@@ -198,6 +196,7 @@ public class Assembler {
 		String M_code = "";
 		String loc = "";
 		String leng = "";
+		String E_code = "";
 		int total_leng =0;
 		int[] addr = new int[TokenList.size()];
 		int end = 0;
@@ -224,13 +223,19 @@ public class Assembler {
 				if(t.operator.equals("START")||(t.operator.equals("CSECT"))) { // START나 CSECT 만나면 H 쓰기
 					loc = String.format("%06X", symtabList.get(i).locationList.get(j));
 					H_code = "H"+t.label+"\t"+loc;
-					if(i==0) //위에서 구한 해당 섹션에 대한 전체 길이 넣기
+					if(i==0) { //위에서 구한 해당 섹션에 대한 전체 길이 넣기
 						H_code += String.format("%06X", addr[0]);
-					else if(i==1)
-						H_code += String.format("%06X", addr[1]);
-					else
-						H_code += String.format("%06X", addr[2]);
+						E_code = "E"+loc;
 
+					}
+					else if(i==1) {
+						H_code += String.format("%06X", addr[1]);
+						E_code = "E";
+					}
+					else {
+						H_code += String.format("%06X", addr[2]);
+						E_code = "E";
+					}
 					
 					loc=String.format("%X", 0);	// 0 으로 초기화
 					
@@ -321,7 +326,7 @@ public class Assembler {
 				
 				
 			}
-			codeList.add(H_code+output+lit_code+M_code+"E"); // codeList를 섹션 별로 저장함
+			codeList.add(H_code+output+lit_code+M_code+E_code+"\r\n"); // codeList를 섹션 별로 저장함
 			
 		/* codeList에 추가해준 code 들을 초기화 해줌 */
 			M_code = ""; 
@@ -330,6 +335,7 @@ public class Assembler {
 			lit_code = "";
 			H_code = "";
 			total_leng=0;
+			E_code ="";
 			System.out.println(codeList.get(i));
 			}
 	}
